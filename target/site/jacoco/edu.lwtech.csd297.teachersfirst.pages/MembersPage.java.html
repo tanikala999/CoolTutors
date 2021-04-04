@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MembersPage.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">teachersFirst</a> &gt; <a href="index.source.html" class="el_package">edu.lwtech.csd297.teachersfirst.pages</a> &gt; <span class="el_source">MembersPage.java</span></div><h1>MembersPage.java</h1><pre class="source lang-java linenums">package edu.lwtech.csd297.teachersfirst.pages;
+
+import java.util.*;
+import javax.servlet.http.*;
+
+import edu.lwtech.csd297.teachersfirst.*;
+import edu.lwtech.csd297.teachersfirst.pojos.*;
+
+public class MembersPage extends PageLoader {
+
+	// Constructor
+<span class="nc" id="L12">	public MembersPage(HttpServletRequest request, HttpServletResponse response) { super(request, response); }</span>
+
+	// Page-specific
+
+	@Override
+	public void loadPage() {
+<span class="nc" id="L18">		templateDataMap.put(&quot;title&quot;, &quot;Members&quot;);</span>
+
+		// Should only show members that it should show based on who's querying...
+		final List&lt;Member&gt; members;  // let's play effectively final games...
+
+<span class="nc bnc" id="L23" title="All 2 branches missed.">		if (uid &gt; 0) {</span>
+<span class="nc bnc" id="L24" title="All 4 branches missed.">			if (isAdmin || isInstructor) members = DataManager.getMemberDAO().retrieveAll();</span>
+<span class="nc" id="L25">			else members = List.of(DataManager.getMemberDAO().retrieveByID(uid));</span>
+		} else {
+<span class="nc" id="L27">			members = null;</span>
+		}
+		
+		// FreeMarker
+<span class="nc" id="L31">		templateName = &quot;members.ftl&quot;;</span>
+<span class="nc" id="L32">		templateDataMap.put(&quot;members&quot;, members);</span>
+
+		// Go
+<span class="nc" id="L35">		trySendResponse();</span>
+<span class="nc" id="L36">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

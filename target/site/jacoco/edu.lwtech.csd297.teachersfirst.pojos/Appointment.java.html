@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Appointment.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">teachersFirst</a> &gt; <a href="index.source.html" class="el_package">edu.lwtech.csd297.teachersfirst.pojos</a> &gt; <span class="el_source">Appointment.java</span></div><h1>Appointment.java</h1><pre class="source lang-java linenums">package edu.lwtech.csd297.teachersfirst.pojos;
+
+import java.sql.Timestamp;
+
+import edu.lwtech.csd297.teachersfirst.*;
+
+public class Appointment {
+    
+	private int recID;
+	private int studentId;
+	private int instructorId;
+	private Timestamp startTime;
+	private Timestamp endTime;
+
+	// ----------------------------------------------------------------
+	
+	public Appointment(int studentID, int instructorID,
+			int startYear, int startMonth, int startDay, int startHour, int startMinute,
+			int endYear, int endMonth, int endDay, int endHour, int endMinute) {
+
+<span class="fc" id="L21">		this(-1, studentID, instructorID, DateHelpers.toTimestamp(startYear, startMonth, startDay, startHour, startMinute, 0),</span>
+<span class="fc" id="L22">				DateHelpers.toTimestamp(endYear, endMonth, endDay, endHour, endMinute, 0));</span>
+<span class="fc" id="L23">	}</span>
+	
+	public Appointment(int studentID, int instructorID, Timestamp startTime, Timestamp endTime) {
+
+<span class="fc" id="L27">		this(-1, studentID, instructorID, startTime, endTime);</span>
+<span class="fc" id="L28">	}</span>
+
+<span class="fc" id="L30">	public Appointment(int recID, int studentID, int instructorID, Timestamp startTime, Timestamp endTime) {</span>
+
+<span class="fc bfc" id="L32" title="All 2 branches covered.">		if (recID &lt; -1) throw new IllegalArgumentException(&quot;Invalid argument: recID &lt; -1&quot;);</span>
+<span class="fc bfc" id="L33" title="All 2 branches covered.">		if (studentID &lt; -1) throw new IllegalArgumentException(&quot;Invalid argument: studentID &lt; -1&quot;);</span>
+<span class="fc bfc" id="L34" title="All 2 branches covered.">		if (instructorID &lt; -1) throw new IllegalArgumentException(&quot;Invalid argument: instructorID &lt; -1&quot;);</span>
+<span class="fc bfc" id="L35" title="All 2 branches covered.">		if (startTime == null) throw new IllegalArgumentException(&quot;Invalid argument: startTime is null&quot;);</span>
+<span class="fc bfc" id="L36" title="All 2 branches covered.">		if (endTime == null) throw new IllegalArgumentException(&quot;Invalid argument: endTime is null&quot;);</span>
+		
+<span class="fc" id="L38">		this.recID = recID;</span>
+<span class="fc" id="L39">		this.studentId = studentID;</span>
+<span class="fc" id="L40">		this.instructorId = instructorID;</span>
+<span class="fc" id="L41">		this.startTime = startTime;</span>
+<span class="fc" id="L42">		this.endTime = endTime;</span>
+<span class="fc" id="L43">	}</span>
+
+	// ----------------------------------------------------------------
+
+	public int getRecID() {
+<span class="fc" id="L48">		return this.recID;</span>
+	}
+
+	public void setRecID(int recID) {
+		// Updates the recID of POJOs that have just been added to the database
+<span class="fc bfc" id="L53" title="All 2 branches covered.">		if (recID &lt;= 0){ throw new IllegalArgumentException(&quot;setRecID: recID cannot be negative.&quot;); }</span>
+<span class="fc bfc" id="L54" title="All 2 branches covered.">		if (this.recID != (-1)){ throw new IllegalArgumentException(&quot;setRecID: Object has already been added to the database (recID != 1).&quot;); }</span>
+
+<span class="fc" id="L56">		this.recID = recID;</span>
+<span class="fc" id="L57">	}</span>
+
+	// ----------------------------------------------------------------
+
+	public int getStudentID() {
+<span class="fc" id="L62">		return this.studentId;</span>
+	}
+	
+	public int getInstructorID() {
+<span class="fc" id="L66">		return this.instructorId;</span>
+	}
+	
+	public boolean getIsMyAppointment(int memberId) {
+<span class="fc bfc" id="L70" title="All 4 branches covered.">		return this.studentId == memberId || this.instructorId == memberId;</span>
+	}
+
+	public Timestamp getStartTime() {
+<span class="fc" id="L74">		return this.startTime;</span>
+	}
+	
+	public Timestamp getEndTime() {
+<span class="fc" id="L78">		return this.endTime;</span>
+	}
+
+	public String getName() {
+<span class="fc" id="L82">		return this.toString();</span>
+	}
+
+	// ----------------------------------------------------------------
+
+	@Override
+	public String toString() {
+<span class="fc" id="L89">		return &quot;Appointment/&quot; + this.studentId + &quot;&gt;&quot; + this.instructorId + &quot;@&quot; + this.startTime.toString() + &quot;-&quot; + this.endTime.toString();</span>
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+<span class="fc bfc" id="L94" title="All 2 branches covered.">		if (obj == null) return false; // can't be same as null</span>
+<span class="fc bfc" id="L95" title="All 2 branches covered.">		if (obj == this) return true; // same as self is automatically true</span>
+<span class="fc bfc" id="L96" title="All 2 branches covered.">		if (!(obj instanceof Appointment)) return false; // must be same type of object</span>
+
+<span class="fc" id="L98">		Appointment other = (Appointment) obj; // cast to compare fields</span>
+<span class="fc bfc" id="L99" title="All 2 branches covered.">		if (this.recID != other.recID) return false;</span>
+<span class="fc bfc" id="L100" title="All 2 branches covered.">		if (this.studentId != other.studentId) return false;</span>
+<span class="fc bfc" id="L101" title="All 2 branches covered.">		if (this.instructorId != other.instructorId) return false;</span>
+<span class="fc bfc" id="L102" title="All 2 branches covered.">		if (!this.startTime.equals(other.startTime)) return false;</span>
+<span class="fc bfc" id="L103" title="All 2 branches covered.">		if (!this.endTime.equals(other.endTime)) return false;</span>
+
+		// no failures, good match
+<span class="fc" id="L106">		return true;</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

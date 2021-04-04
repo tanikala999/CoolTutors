@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AppointmentSqlDAO.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">teachersFirst</a> &gt; <a href="index.source.html" class="el_package">edu.lwtech.csd297.teachersfirst.daos</a> &gt; <span class="el_source">AppointmentSqlDAO.java</span></div><h1>AppointmentSqlDAO.java</h1><pre class="source lang-java linenums">package edu.lwtech.csd297.teachersfirst.daos;
+
+import java.sql.*;
+import java.util.*;
+
+import org.apache.logging.log4j.*;
+
+import edu.lwtech.csd297.teachersfirst.DateHelpers;
+import edu.lwtech.csd297.teachersfirst.pojos.*;
+
+public class AppointmentSqlDAO implements DAO&lt;Appointment&gt; {
+	
+<span class="fc" id="L13">	private static final Logger logger = LogManager.getLogger(AppointmentSqlDAO.class.getName());</span>
+
+<span class="fc" id="L15">	private Connection conn = null;</span>
+
+<span class="fc" id="L17">	public AppointmentSqlDAO() {</span>
+<span class="fc" id="L18">		this.conn = null;                                   // conn must be created during init()</span>
+<span class="fc" id="L19">	}</span>
+
+	public boolean initialize(String initParams) {
+<span class="fc" id="L22">		logger.info(&quot;Connecting to the database...&quot;);</span>
+
+<span class="fc" id="L24">		conn = SQLUtils.connect(initParams);</span>
+<span class="pc bpc" id="L25" title="1 of 2 branches missed.">		if (conn == null) {</span>
+<span class="nc" id="L26">			logger.error(&quot;Unable to connect to SQL Database: &quot; + initParams);</span>
+<span class="nc" id="L27">			return false;</span>
+		}
+<span class="fc" id="L29">		logger.info(&quot;...connected!&quot;);</span>
+
+<span class="fc" id="L31">		return true;</span>
+	}
+
+	public void terminate() {
+<span class="fc" id="L35">		SQLUtils.disconnect(conn);</span>
+<span class="fc" id="L36">		conn = null;</span>
+<span class="fc" id="L37">	}</span>
+
+	public int insert(Appointment appointment) {
+<span class="nc" id="L40">		logger.debug(&quot;Inserting &quot; + appointment + &quot;...&quot;);</span>
+
+<span class="nc bnc" id="L42" title="All 2 branches missed.">		if (appointment.getRecID() != -1) {</span>
+<span class="nc" id="L43">			logger.error(&quot;Attempting to add previously added Appointment: &quot; + appointment);</span>
+<span class="nc" id="L44">			return -1;</span>
+		}
+
+<span class="nc" id="L47">		String query = &quot;INSERT INTO Appointments (studentID, instructorID, startTime, endTime) VALUES (?,?,?,?)&quot;;</span>
+
+<span class="nc" id="L49">		int recID = SQLUtils.executeSqlAppointmentInsert(conn, query, appointment.getRecID(), appointment.getStudentID(), appointment.getInstructorID(), appointment.getStartTime(), appointment.getEndTime());    </span>
+		
+<span class="nc" id="L51">		logger.debug(&quot;Appointment successfully inserted with ID = &quot; + recID);</span>
+<span class="nc" id="L52">		return recID;</span>
+	}
+
+	public Appointment retrieveByID(int recID) {
+		//logger.debug(&quot;Trying to get Appointment with ID: &quot; + recID);
+		
+<span class="nc" id="L58">		String query = &quot;SELECT recID, studentID, instructorID, startTime, endTime&quot;;</span>
+<span class="nc" id="L59">		query += &quot; FROM Appointments WHERE recID=&quot; + recID;</span>
+
+<span class="nc" id="L61">		List&lt;SQLRow&gt; rows = SQLUtils.executeSQL(conn, query);</span>
+<span class="nc bnc" id="L62" title="All 4 branches missed.">		if (rows == null || rows.size() == 0) {</span>
+<span class="nc" id="L63">			logger.debug(&quot;Did not find appointment.&quot;);</span>
+<span class="nc" id="L64">			return null;</span>
+		}
+		
+<span class="nc" id="L67">		SQLRow row = rows.get(0);</span>
+<span class="nc" id="L68">		Appointment appointment = convertRowToAppointment(row);</span>
+<span class="nc" id="L69">		return appointment;</span>
+	}
+	
+	public Appointment retrieveByIndex(int index) {
+		//logger.debug(&quot;Trying to get Appointment with index: &quot; + index);
+		
+<span class="nc" id="L75">		index++;</span>
+
+<span class="nc bnc" id="L77" title="All 2 branches missed.">		if (index &lt; 1) {</span>
+<span class="nc" id="L78">			logger.debug(&quot;retrieveByIndex: index cannot be negative&quot;);</span>
+<span class="nc" id="L79">			return null;</span>
+		}
+
+<span class="nc" id="L82">		String query = &quot;SELECT * FROM Appointments ORDER BY recID LIMIT &quot; + index;</span>
+
+<span class="nc" id="L84">		List&lt;SQLRow&gt; rows = SQLUtils.executeSQL(conn, query);</span>
+<span class="nc bnc" id="L85" title="All 4 branches missed.">		if (rows == null || rows.size() == 0) {</span>
+<span class="nc" id="L86">			logger.debug(&quot;Did not find appointment.&quot;);</span>
+<span class="nc" id="L87">			return null;</span>
+		}
+		
+<span class="nc" id="L90">		SQLRow row = rows.get(rows.size() - 1);</span>
+<span class="nc" id="L91">		Appointment appointment = convertRowToAppointment(row);</span>
+<span class="nc" id="L92">		return appointment;</span>
+	}
+	
+	public List&lt;Appointment&gt; retrieveAll() {
+<span class="nc" id="L96">		logger.debug(&quot;Getting all Appointments...&quot;);</span>
+		
+<span class="nc" id="L98">		String query = &quot;SELECT recID, studentID, instructorID, startTime, endTime&quot;;</span>
+<span class="nc" id="L99">		query += &quot; FROM Appointments ORDER BY recID&quot;;</span>
+
+<span class="nc" id="L101">		List&lt;SQLRow&gt; rows = SQLUtils.executeSQL(conn, query);</span>
+<span class="nc bnc" id="L102" title="All 4 branches missed.">		if (rows == null || rows.size() == 0) {</span>
+<span class="nc" id="L103">			logger.debug(&quot;No appointments found!&quot;);</span>
+<span class="nc" id="L104">			return null;</span>
+		}
+
+<span class="nc" id="L107">		List&lt;Appointment&gt; appointments = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L108" title="All 2 branches missed.">		for (SQLRow row : rows) {</span>
+<span class="nc" id="L109">			Appointment appointment = convertRowToAppointment(row);</span>
+<span class="nc" id="L110">			appointments.add(appointment);</span>
+<span class="nc" id="L111">		}</span>
+<span class="nc" id="L112">		return appointments;</span>
+	}
+	
+	public List&lt;Integer&gt; retrieveAllIDs() {
+<span class="nc" id="L116">		logger.debug(&quot;Getting all Appointment IDs...&quot;);</span>
+
+<span class="nc" id="L118">		String query = &quot;SELECT recID FROM Appointments ORDER BY recID&quot;;</span>
+
+<span class="nc" id="L120">		List&lt;SQLRow&gt; rows = SQLUtils.executeSQL(conn, query);</span>
+<span class="nc bnc" id="L121" title="All 4 branches missed.">		if (rows == null || rows.size() == 0) {</span>
+<span class="nc" id="L122">			logger.debug(&quot;No appointments found!&quot;);</span>
+<span class="nc" id="L123">			return null;</span>
+		}
+		
+<span class="nc" id="L126">		List&lt;Integer&gt; recIDs = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L127" title="All 2 branches missed.">		for (SQLRow row : rows) {</span>
+<span class="nc" id="L128">			String value = row.getItem(&quot;recID&quot;);</span>
+<span class="nc" id="L129">			int i = Integer.parseInt(value);</span>
+<span class="nc" id="L130">			recIDs.add(i);</span>
+<span class="nc" id="L131">		}</span>
+<span class="nc" id="L132">		return recIDs;</span>
+	}
+
+	public List&lt;Appointment&gt; search(String keyword) {
+<span class="nc" id="L136">		logger.debug(&quot;Searching for appointment with '&quot; + keyword + &quot;'&quot;);</span>
+
+<span class="nc" id="L138">		String query = &quot;SELECT recID, instructorID, startTime, endTime FROM Appointments WHERE&quot;;</span>
+<span class="nc" id="L139">		query += &quot; username like ?&quot;;</span>
+<span class="nc" id="L140">		query += &quot; ORDER BY recID&quot;;</span>
+
+<span class="nc" id="L142">		keyword = &quot;%&quot; + keyword + &quot;%&quot;;</span>
+
+<span class="nc" id="L144">		List&lt;SQLRow&gt; rows = SQLUtils.executeSQL(conn, query, keyword);</span>
+<span class="nc bnc" id="L145" title="All 4 branches missed.">		if (rows == null || rows.size() == 0) {</span>
+<span class="nc" id="L146">			logger.debug(&quot;No appointments found!&quot;);</span>
+<span class="nc" id="L147">			return null;</span>
+		}
+
+<span class="nc" id="L150">		List&lt;Appointment&gt; appointments = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L151" title="All 2 branches missed.">		for (SQLRow row : rows) {</span>
+<span class="nc" id="L152">			Appointment appointment = convertRowToAppointment(row);</span>
+<span class="nc" id="L153">			appointments.add(appointment);</span>
+<span class="nc" id="L154">		}</span>
+<span class="nc" id="L155">		return appointments;</span>
+	}
+
+	public boolean update(Appointment appointment) {
+<span class="nc" id="L159">		throw new UnsupportedOperationException(&quot;Unable to update existing appointment in database.&quot;);</span>
+	}
+
+	public void delete(int recID) {
+<span class="nc" id="L163">		logger.debug(&quot;Trying to delete Appointment with ID: &quot; + recID);</span>
+
+<span class="nc" id="L165">		String query = &quot;DELETE FROM Appointments WHERE recID=&quot; + recID;</span>
+<span class="nc" id="L166">		SQLUtils.executeSQL(conn, query);</span>
+<span class="nc" id="L167">	}</span>
+	
+	public int size() {
+<span class="nc" id="L170">		logger.debug(&quot;Getting the number of rows...&quot;);</span>
+
+<span class="nc" id="L172">		String query = &quot;SELECT count(*) as cnt FROM Appointments&quot;;</span>
+
+<span class="nc" id="L174">		List&lt;SQLRow&gt; rows = SQLUtils.executeSQL(conn, query);</span>
+<span class="nc bnc" id="L175" title="All 4 branches missed.">		if (rows == null || rows.size() == 0) {</span>
+<span class="nc" id="L176">			logger.error(&quot;No appointments found!&quot;);</span>
+<span class="nc" id="L177">			return 0;</span>
+		}
+
+<span class="nc" id="L180">		String value = rows.get(0).getItem(&quot;cnt&quot;);</span>
+<span class="nc" id="L181">		return Integer.parseInt(value);</span>
+	}
+
+	// =====================================================================
+
+	private Appointment convertRowToAppointment(SQLRow row) {
+<span class="nc" id="L187">		logger.debug(&quot;Converting &quot; + row + &quot; to Appointment...&quot;);</span>
+<span class="nc" id="L188">		int recID = Integer.parseInt(row.getItem(&quot;recID&quot;));</span>
+<span class="nc" id="L189">		int studentID = Integer.parseInt(row.getItem(&quot;studentID&quot;));</span>
+<span class="nc" id="L190">		int instructorID = Integer.parseInt(row.getItem(&quot;instructorID&quot;));</span>
+<span class="nc" id="L191">		Timestamp startTime = DateHelpers.fromSqlDatetimeToTimestamp(row.getItem(&quot;startTime&quot;));</span>
+<span class="nc" id="L192">		Timestamp endTime = DateHelpers.fromSqlDatetimeToTimestamp(row.getItem(&quot;endTime&quot;));</span>
+<span class="nc" id="L193">		return new Appointment(recID,studentID, instructorID, startTime, endTime);</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

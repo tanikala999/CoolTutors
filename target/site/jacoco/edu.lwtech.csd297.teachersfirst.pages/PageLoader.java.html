@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PageLoader.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">teachersFirst</a> &gt; <a href="index.source.html" class="el_package">edu.lwtech.csd297.teachersfirst.pages</a> &gt; <span class="el_source">PageLoader.java</span></div><h1>PageLoader.java</h1><pre class="source lang-java linenums">package edu.lwtech.csd297.teachersfirst.pages;
+
+import java.io.*;
+import java.util.*;
+
+import javax.servlet.*;
+import javax.servlet.http.*;
+
+import org.apache.logging.log4j.*;
+
+import freemarker.template.*;
+import edu.lwtech.csd297.teachersfirst.*;
+import edu.lwtech.csd297.teachersfirst.pojos.*;
+
+public abstract class PageLoader {
+
+	// Declarations
+
+	protected HttpServletRequest request;
+	protected HttpServletResponse response;
+<span class="nc" id="L21">	protected static final Logger logger = LogManager.getLogger(TeachersFirstServlet.class);</span>
+
+<span class="nc" id="L23">	protected String templateName = null;</span>
+	protected Map&lt;String, Object&gt; templateDataMap;
+	protected int uid;
+<span class="nc" id="L26">	protected boolean isAdmin = false;</span>
+<span class="nc" id="L27">	protected boolean isInstructor = false;</span>
+<span class="nc" id="L28">	protected boolean isStudent = false;</span>
+
+	// Static Declarations (shared variables to handle freemarker and DAOs)
+
+<span class="nc" id="L32">	protected static final Configuration freeMarkerConfig = new Configuration(Configuration.getVersion());</span>
+
+	// Static Methods (basically meta-constructors/destructors for class-internal
+	// variables)
+
+	public static void initializeFreeMarker(String resourcesDir) throws ServletException {
+<span class="nc" id="L38">		String templateDir = resourcesDir + &quot;/templates&quot;;</span>
+		try {
+<span class="nc" id="L40">			freeMarkerConfig.setDirectoryForTemplateLoading(new File(templateDir));</span>
+<span class="nc" id="L41">		} catch (IOException e) {</span>
+<span class="nc" id="L42">			String msg = &quot;Template directory not found: &quot; + templateDir;</span>
+<span class="nc" id="L43">			logger.fatal(msg, e);</span>
+<span class="nc" id="L44">			throw new UnavailableException(msg);</span>
+<span class="nc" id="L45">		}</span>
+<span class="nc" id="L46">	}</span>
+
+	// Constructors
+
+<span class="nc" id="L50">	protected PageLoader(HttpServletRequest request, HttpServletResponse response) {</span>
+<span class="nc" id="L51">		this.request = request;</span>
+<span class="nc" id="L52">		this.response = response;</span>
+<span class="nc" id="L53">		templateDataMap = new HashMap&lt;&gt;();</span>
+
+		// Handle session / cookies
+<span class="nc" id="L56">		uid = Security.getUserId(request);</span>
+<span class="nc bnc" id="L57" title="All 2 branches missed.">		if (uid &gt; 0) {</span>
+<span class="nc" id="L58">			Member member = DataManager.getMemberDAO().retrieveByID(uid);</span>
+<span class="nc bnc" id="L59" title="All 2 branches missed.">			if (member != null) {</span>
+<span class="nc" id="L60">				isAdmin = member.getIsAdmin();</span>
+<span class="nc" id="L61">				isInstructor = member.getIsInstructor();</span>
+<span class="nc" id="L62">				isStudent = member.getIsStudent();</span>
+			} else {
+<span class="nc" id="L64">				Security.logout(request, &quot;Bad session data or failure to contact SQL server.&quot;);</span>
+<span class="nc" id="L65">				templateDataMap.put(&quot;messge&quot;, &quot;Error contacting SQL server. Error code: &quot; + uid + &quot;.a5j // For your own security you will need to log in again.&quot;);</span>
+<span class="nc" id="L66">				templateName = &quot;messageOnly.ftl&quot;;</span>
+<span class="nc" id="L67">				this.trySendResponse();</span>
+<span class="nc" id="L68">				DataManager.resetDAOs();</span>
+<span class="nc" id="L69">				return; // abort here</span>
+			}
+		}
+<span class="nc" id="L72">		String userName = QueryHelpers.getSessionValue(request, &quot;USER_NAME&quot;, &quot;Stranger&quot;);</span>
+<span class="nc" id="L73">		String message = QueryHelpers.getGet(request, &quot;message&quot;);</span>
+
+<span class="nc" id="L75">		templateDataMap.put(&quot;websiteTitle&quot;, DataManager.websiteTitle);</span>
+<span class="nc" id="L76">		templateDataMap.put(&quot;websiteSubtitle&quot;, DataManager.websiteSubtitle);</span>
+<span class="nc" id="L77">		templateDataMap.put(&quot;showWelcome&quot;, true);</span>
+<span class="nc" id="L78">		templateDataMap.put(&quot;userId&quot;, uid);</span>
+<span class="nc" id="L79">		templateDataMap.put(&quot;userName&quot;, userName);</span>
+<span class="nc" id="L80">		templateDataMap.put(&quot;isAdmin&quot;, isAdmin);</span>
+<span class="nc" id="L81">		templateDataMap.put(&quot;isInstructor&quot;, isInstructor);</span>
+<span class="nc" id="L82">		templateDataMap.put(&quot;isStudent&quot;, isStudent);</span>
+<span class="nc" id="L83">		templateDataMap.put(&quot;message&quot;, message);</span>
+<span class="nc" id="L84">	}</span>
+
+	// Public entry point
+
+	public abstract void loadPage();
+
+	// Protected Methods (shared magic between all pages)
+
+	protected void sendFake404(String description) {
+<span class="nc" id="L93">		logger.debug(&quot;====================== SECURITY ALERT ======================&quot;);</span>
+<span class="nc" id="L94">		logger.debug(&quot;Description: {}&quot;, description);</span>
+<span class="nc" id="L95">		final String sanitizedQuery = QueryHelpers.getSanitizedFullQueryString(request);</span>
+<span class="nc" id="L96">		logger.debug(&quot;Sanitized Query: {}&quot;, sanitizedQuery);</span>
+<span class="nc bnc" id="L97" title="All 2 branches missed.">		final String pathInfo = request.getPathInfo() == null ? &quot;&quot; : request.getPathInfo();</span>
+<span class="nc" id="L98">		logger.debug(&quot;Page Path: {}&quot;, pathInfo);</span>
+		try {
+<span class="nc" id="L100">			this.response.sendError(HttpServletResponse.SC_NOT_FOUND);</span>
+<span class="nc" id="L101">		} catch (IOException e) {</span>
+<span class="nc" id="L102">			logger.error(&quot;Unable to send fake 404 response code.&quot;, e);</span>
+<span class="nc" id="L103">		}</span>
+<span class="nc" id="L104">	}</span>
+
+	protected void trySendResponse() {
+<span class="nc" id="L107">		trySendResponse(&quot;&quot;);</span>
+<span class="nc" id="L108">	}</span>
+
+	protected void trySendResponse(String headerOverwrite) {
+
+<span class="nc bnc" id="L112" title="All 2 branches missed.">		if (templateName == null) {</span>
+
+			// Send 404 error response
+			try {
+<span class="nc" id="L116">				response.sendError(HttpServletResponse.SC_NOT_FOUND);</span>
+<span class="nc" id="L117">			} catch (IOException e) {</span>
+<span class="nc" id="L118">				logger.error(&quot;Unable to send 404 response code.&quot;, e);</span>
+<span class="nc" id="L119">			}</span>
+<span class="nc" id="L120">			return;</span>
+
+		} else {
+
+			// Process template:
+<span class="nc" id="L125">			logger.debug(&quot;Processing Template: &quot; + templateName);</span>
+<span class="nc bnc" id="L126" title="All 2 branches missed.">			if (headerOverwrite != &quot;&quot;) {</span>
+<span class="nc" id="L127">				response.setHeader(&quot;Content-Type&quot;, headerOverwrite);</span>
+			}
+<span class="nc" id="L129">			try (PrintWriter out = response.getWriter()) {</span>
+<span class="nc" id="L130">				Template view = freeMarkerConfig.getTemplate(templateName);</span>
+<span class="nc" id="L131">				view.process(templateDataMap, out);</span>
+<span class="nc" id="L132">			} catch (TemplateException | MalformedTemplateNameException e) {</span>
+<span class="nc" id="L133">				logger.error(&quot;Template Error: &quot;, e);</span>
+<span class="nc" id="L134">			} catch (IOException e) {</span>
+<span class="nc" id="L135">				logger.error(&quot;IO Error: &quot;, e);</span>
+<span class="nc" id="L136">			}</span>
+
+		}
+		
+<span class="nc" id="L140">	}</span>
+
+	protected void trySendJson(String json) {
+		// send json:
+<span class="nc" id="L144">		logger.debug(&quot;Attempting to send json...&quot;);</span>
+<span class="nc" id="L145">		try (ServletOutputStream out = response.getOutputStream()) {</span>
+<span class="nc" id="L146">			out.println(json);</span>
+<span class="nc" id="L147">		} catch (IOException e) {</span>
+<span class="nc" id="L148">			logger.error(&quot;IO Error: &quot;, e);</span>
+<span class="nc" id="L149">		}</span>
+<span class="nc" id="L150">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

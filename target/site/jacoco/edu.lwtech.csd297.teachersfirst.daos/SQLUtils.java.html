@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SQLUtils.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">teachersFirst</a> &gt; <a href="index.source.html" class="el_package">edu.lwtech.csd297.teachersfirst.daos</a> &gt; <span class="el_source">SQLUtils.java</span></div><h1>SQLUtils.java</h1><pre class="source lang-java linenums">package edu.lwtech.csd297.teachersfirst.daos;
+
+import java.sql.*;
+import java.util.*;
+
+import org.apache.logging.log4j.*;
+
+import edu.lwtech.csd297.teachersfirst.*;
+
+class SQLUtils {
+
+<span class="fc" id="L12">    private static final Logger logger = LogManager.getLogger(SQLUtils.class.getName());</span>
+
+    private SQLUtils() { }                                          // Hide the implicit public constructor
+
+    public static Connection connect(String initParams) {
+<span class="fc" id="L17">        logger.debug(&quot;Connecting to &quot; + initParams + &quot;...&quot;);</span>
+
+<span class="fc" id="L19">        String driverClass = &quot;org.mariadb.jdbc.Driver&quot;;</span>
+        try {
+<span class="fc" id="L21">            Class.forName(driverClass);                             // Dynamically loads the driver from the WAR file</span>
+<span class="nc" id="L22">        } catch (ClassNotFoundException e) {</span>
+<span class="nc" id="L23">            logger.error(&quot;Unable to find JDBC driver on classpath: &quot; + driverClass , e);</span>
+<span class="nc" id="L24">            return null;</span>
+<span class="fc" id="L25">        }</span>
+
+<span class="fc" id="L27">        Connection conn = null;</span>
+        try {
+<span class="fc" id="L29">            conn = DriverManager.getConnection(initParams);</span>
+<span class="nc" id="L30">        } catch (SQLException e) {</span>
+<span class="nc" id="L31">            logger.error(&quot;Unable to connect to SQL Database with: &quot; + initParams, e);</span>
+<span class="nc" id="L32">            return null;</span>
+<span class="fc" id="L33">        }</span>
+
+<span class="fc" id="L35">        logger.debug(&quot;Connected!&quot;);</span>
+<span class="fc" id="L36">        return conn;</span>
+    }
+
+    public static List&lt;SQLRow&gt; executeSQL(Connection conn, String query, String... arguments) {
+        //logger.debug(&quot;Executing SQL statement: &quot; + query);
+
+        try {
+            // Create the new statement object
+<span class="fc" id="L44">            PreparedStatement stmt = conn.prepareStatement(query);</span>
+
+            // Substitute in the argument values for the question marks
+<span class="fc" id="L47">            int position = 1;</span>
+<span class="pc bpc" id="L48" title="1 of 2 branches missed.">            for (String arg : arguments) {</span>
+<span class="nc" id="L49">                stmt.setString(position++, arg);</span>
+            }
+
+<span class="fc" id="L52">            query = query.toLowerCase();</span>
+<span class="pc bpc" id="L53" title="2 of 4 branches missed.">            if (query.contains(&quot;update &quot;) || query.contains(&quot;delete &quot;)) {</span>
+
+<span class="nc" id="L55">                int numRows = stmt.executeUpdate();</span>
+<span class="nc" id="L56">                return results(numRows);</span>
+
+<span class="pc bpc" id="L58" title="1 of 2 branches missed.">            } else if (query.contains(&quot;select &quot;)) {</span>
+
+                // Execute the SELECT query
+<span class="fc" id="L61">                ResultSet sqlResults = stmt.executeQuery();</span>
+
+                // Get the column names
+<span class="fc" id="L64">                ResultSetMetaData md = sqlResults.getMetaData();</span>
+<span class="fc" id="L65">                List&lt;String&gt; columns = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L66" title="All 2 branches covered.">                for (int i=0; i &lt; md.getColumnCount(); i++) {</span>
+<span class="fc" id="L67">                    columns.add(md.getColumnName(i+1));</span>
+                }
+
+                // Store each row in a List
+<span class="fc" id="L71">                List&lt;SQLRow&gt; rows = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L72" title="All 2 branches covered.">                while (sqlResults.next()) {</span>
+<span class="fc" id="L73">                    SQLRow row = new SQLRow(columns, sqlResults);</span>
+                    //logger.debug(row.toString());
+<span class="fc" id="L75">                    rows.add(row);</span>
+<span class="fc" id="L76">                }</span>
+
+<span class="fc" id="L78">                return rows;</span>
+            }
+<span class="nc" id="L80">        } catch (SQLException e) {</span>
+<span class="nc" id="L81">            logger.error(&quot;SQL Exception caught in executeSQL: &quot; + query, e);</span>
+<span class="nc" id="L82">            return null;</span>
+<span class="nc" id="L83">        }</span>
+<span class="nc" id="L84">        return null;</span>
+    }
+
+
+    // Default Insert
+    public static int executeSQLInsert(Connection conn, String query, String recID, String... arguments) {
+        //logger.debug(&quot;Executing SQL Insert: &quot; + query);
+
+<span class="nc" id="L92">        int newID = -1;</span>
+<span class="nc" id="L93">        String[] returnColumns = new String[] { recID };</span>
+
+        try {
+            // Create the new statement object, specifying the recID return column as well
+<span class="nc" id="L97">            PreparedStatement stmt = conn.prepareStatement(query, returnColumns);</span>
+
+            // Substitute in the argument values for the question marks
+<span class="nc" id="L100">            int position = 1;</span>
+<span class="nc bnc" id="L101" title="All 2 branches missed.">            for (String arg : arguments)</span>
+<span class="nc" id="L102">                stmt.setString(position++, arg);</span>
+
+            // Execute the INSERT statement
+<span class="nc" id="L105">            stmt.executeUpdate();</span>
+            
+            // Get the new recID value from the query results and return it to the caller
+<span class="nc" id="L108">            ResultSet keys = stmt.getGeneratedKeys();</span>
+<span class="nc" id="L109">            keys.next();</span>
+<span class="nc" id="L110">            newID = keys.getInt(1);</span>
+<span class="nc" id="L111">        } catch (SQLException e) {</span>
+<span class="nc" id="L112">            logger.error(&quot;SQL Exception caught in executeSQLInsert: &quot; + query, e);</span>
+<span class="nc" id="L113">            return -1;</span>
+<span class="nc" id="L114">        }</span>
+
+<span class="nc" id="L116">        return newID;</span>
+    }
+
+
+	// Member Insert
+	public static int executeSqlMemberInsert(Connection conn,
+			String query,
+			int recID, String loginName, String passwordHash,
+			String displayName, Timestamp birthdate, String gender,
+			String teacherNotes,
+			String phone1, String phone2, String email,
+			boolean isStudent, boolean isInstructor, boolean isAdmin) {
+
+		//logger.debug(&quot;Executing SQL Insert: &quot; + query);
+
+<span class="nc" id="L131">		int newID = -1;</span>
+<span class="nc" id="L132">		String[] returnColumns = new String[] { String.valueOf(recID) };</span>
+		
+		try {
+			// Create the new statement object, specifying the recID return column as well
+<span class="nc" id="L136">			PreparedStatement stmt = conn.prepareStatement(query, returnColumns);</span>
+			
+<span class="nc" id="L138">			stmt.setString(1, loginName);</span>
+<span class="nc" id="L139">			stmt.setString(2, passwordHash);</span>
+<span class="nc" id="L140">			stmt.setString(3, displayName);</span>
+<span class="nc" id="L141">			stmt.setTimestamp(4, birthdate);</span>
+<span class="nc" id="L142">			stmt.setString(5, gender);</span>
+<span class="nc" id="L143">			stmt.setString(6, teacherNotes);</span>
+<span class="nc" id="L144">			stmt.setString(7, phone1);</span>
+<span class="nc" id="L145">			stmt.setString(8, phone2);</span>
+<span class="nc" id="L146">			stmt.setString(9, email);</span>
+<span class="nc bnc" id="L147" title="All 2 branches missed.">			stmt.setInt(10, isStudent ? 1 : 0);</span>
+<span class="nc bnc" id="L148" title="All 2 branches missed.">			stmt.setInt(11, isInstructor ? 1 : 0);</span>
+<span class="nc bnc" id="L149" title="All 2 branches missed.">			stmt.setInt(12, isAdmin ? 1 : 0);</span>
+			
+			// Execute the INSERT statement
+			//logger.debug(&quot;ATTEMPTING INSERT: &quot; + stmt.toString());
+<span class="nc" id="L153">			stmt.executeUpdate();</span>
+			
+			// Get the new recID value from the query results and return it to the caller
+<span class="nc" id="L156">			ResultSet keys = stmt.getGeneratedKeys();</span>
+<span class="nc" id="L157">			keys.next();</span>
+<span class="nc" id="L158">			newID = keys.getInt(1);</span>
+<span class="nc" id="L159">		} catch (SQLException e) {</span>
+<span class="nc" id="L160">			logger.error(&quot;SQL Exception caught in executeSQLInsert: &quot; + query, e);</span>
+<span class="nc" id="L161">			return -1;</span>
+<span class="nc" id="L162">		}</span>
+
+<span class="nc" id="L164">		return newID;</span>
+	}
+
+
+	//Opening Insert
+	public static int executeSqlOpeningInsert(Connection conn, String query, int recID, int instructorID,
+			Timestamp startTime, Timestamp endTime) {
+				//logger.debug(&quot;Executing SQL Insert: &quot; + query);
+
+<span class="nc" id="L173">				int newID = -1;</span>
+<span class="nc" id="L174">				String[] returnColumns = new String[] { String.valueOf(recID) };</span>
+				
+				try {
+					// Create the new statement object, specifying the recID return column as well
+<span class="nc" id="L178">					PreparedStatement stmt = conn.prepareStatement(query, returnColumns);</span>
+
+<span class="nc" id="L180">					stmt.setInt(1, instructorID);</span>
+<span class="nc" id="L181">					stmt.setTimestamp(2, startTime);</span>
+<span class="nc" id="L182">					stmt.setTimestamp(3, endTime);</span>
+					
+					// Execute the INSERT statement
+<span class="nc" id="L185">					stmt.executeUpdate();</span>
+					
+					// Get the new recID value from the query results and return it to the caller
+<span class="nc" id="L188">					ResultSet keys = stmt.getGeneratedKeys();</span>
+<span class="nc" id="L189">					keys.next();</span>
+<span class="nc" id="L190">					newID = keys.getInt(1);</span>
+<span class="nc" id="L191">				} catch (SQLException e) {</span>
+<span class="nc" id="L192">					logger.error(&quot;SQL Exception caught in executeSQLInsert: &quot; + query, e);</span>
+<span class="nc" id="L193">					return -1;</span>
+<span class="nc" id="L194">				}</span>
+		
+<span class="nc" id="L196">				return newID;</span>
+	}
+
+	// Appointment Insert
+	public static int executeSqlAppointmentInsert(Connection conn, String query, int recID, int studentID, int instructorID,
+			Timestamp startTime, Timestamp endTime) {
+				//logger.debug(&quot;Executing SQL Insert: &quot; + query);
+				
+<span class="nc" id="L204">				int newID = -1;</span>
+<span class="nc" id="L205">				String[] returnColumns = new String[] { String.valueOf(recID) };</span>
+				
+				try {
+					// Create the new statement object, specifying the recID return column as well
+<span class="nc" id="L209">					PreparedStatement stmt = conn.prepareStatement(query, returnColumns);</span>
+					
+<span class="nc" id="L211">					stmt.setInt(1, studentID);</span>
+<span class="nc" id="L212">					stmt.setInt(2, instructorID);</span>
+<span class="nc" id="L213">					stmt.setTimestamp(3, startTime);</span>
+<span class="nc" id="L214">					stmt.setTimestamp(4, endTime);</span>
+					
+					// Execute the INSERT statement
+<span class="nc" id="L217">					stmt.executeUpdate();</span>
+					
+					// Get the new recID value from the query results and return it to the caller
+<span class="nc" id="L220">					ResultSet keys = stmt.getGeneratedKeys();</span>
+<span class="nc" id="L221">					keys.next();</span>
+<span class="nc" id="L222">					newID = keys.getInt(1);</span>
+<span class="nc" id="L223">				} catch (SQLException e) {</span>
+<span class="nc" id="L224">					logger.error(&quot;SQL Exception caught in executeSQLInsert: &quot; + query, e);</span>
+<span class="nc" id="L225">					return -1;</span>
+<span class="nc" id="L226">				}</span>
+		
+<span class="nc" id="L228">				return newID;</span>
+	}
+
+    public static void disconnect(Connection conn) {
+        try {
+<span class="fc" id="L233">            conn.close();</span>
+<span class="nc" id="L234">        } catch (SQLException e) {</span>
+<span class="nc" id="L235">            logger.error(&quot;Exception thrown while trying to close SQL Connection&quot;, e);</span>
+<span class="fc" id="L236">        }</span>
+<span class="fc" id="L237">    }</span>
+
+    // ===============================================================================================
+
+    private static List&lt;SQLRow&gt; results(int i) {
+<span class="nc" id="L242">        List&lt;SQLRow&gt; rows = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L243">        rows.add(new SQLRow(&quot;Value&quot;, i));</span>
+<span class="nc" id="L244">        return rows;</span>
+    }
+
+    
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

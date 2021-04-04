@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Member.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">teachersFirst</a> &gt; <a href="index.source.html" class="el_package">edu.lwtech.csd297.teachersfirst.pojos</a> &gt; <span class="el_source">Member.java</span></div><h1>Member.java</h1><pre class="source lang-java linenums">package edu.lwtech.csd297.teachersfirst.pojos;
+
+import java.sql.Timestamp;
+import java.time.*;
+import java.time.format.*;
+
+import edu.lwtech.csd297.teachersfirst.DateHelpers;
+
+public class Member {
+
+	// Encapsulated member variables
+	private int recID; // Database ID (or -1 if it isn't in the database yet)
+
+	// Login:
+	private String loginName;
+	private String passwordHash;
+
+	// Bios:
+	private String displayName;
+	private Timestamp birthdate;
+	private String gender;
+	private String teacherNotes;
+
+	// Metadata:
+	private String phone1;
+	private String phone2;
+	private String email;
+
+	// Permissions
+	private boolean isStudent;
+	private boolean isInstructor;
+	private boolean isAdmin;
+
+	// no record id, no birthdate -- this is the default for the new member made by the page
+	public Member(String loginName, String passwordHash, String displayName, String gender, String teacherNotes,
+					String phone1, String phone2, String email, boolean isStudent, boolean isInstructor, boolean isAdmin) {
+
+<span class="fc" id="L38">		this(-1, loginName, passwordHash, displayName, DateHelpers.toTimestamp(&quot;1800/01/01 01:01:01&quot;), gender, teacherNotes, phone1, phone2, email, isStudent, isInstructor, isAdmin);</span>
+<span class="fc" id="L39">	}</span>
+
+	// no record id, yes birthdate -- used in code
+	public Member(String loginName, String passwordHash, String displayName, Timestamp birthdate, String gender, String teacherNotes,
+					String phone1, String phone2, String email, boolean isStudent, boolean isInstructor, boolean isAdmin) {
+
+<span class="fc" id="L45">		this(-1, loginName, passwordHash, displayName, birthdate, gender, teacherNotes, phone1, phone2, email, isStudent, isInstructor, isAdmin);</span>
+<span class="fc" id="L46">	}</span>
+
+	// everything
+	public Member(int recID, String loginName, String passwordHash, String displayName, Timestamp birthdate, String gender, String teacherNotes,
+<span class="fc" id="L50">					String phone1, String phone2, String email, boolean isStudent, boolean isInstructor, boolean isAdmin) {</span>
+
+<span class="fc bfc" id="L52" title="All 2 branches covered.">		if (recID &lt; -1) throw new IllegalArgumentException(&quot;Invalid argument: recID &lt; -1&quot;);</span>
+<span class="fc bfc" id="L53" title="All 2 branches covered.">		if (loginName == null) throw new IllegalArgumentException(&quot;Invalid argument: loginName is null&quot;);</span>
+<span class="fc bfc" id="L54" title="All 2 branches covered.">		if (loginName.isEmpty()) throw new IllegalArgumentException(&quot;Invalid argument: loginName is empty&quot;);</span>
+<span class="fc bfc" id="L55" title="All 2 branches covered.">		if (passwordHash == null) throw new IllegalArgumentException(&quot;Invalid argument: passwordHash is null&quot;);</span>
+<span class="fc bfc" id="L56" title="All 2 branches covered.">		if (passwordHash.isEmpty()) throw new IllegalArgumentException(&quot;Invalid argument: passwordHash is empty&quot;);</span>
+		//TODO: SHA1 Password Hash should be 40 chars long -- need hashing first
+<span class="fc bfc" id="L58" title="All 2 branches covered.">		if (displayName == null) throw new IllegalArgumentException(&quot;Invalid argument: displayName is null&quot;);</span>
+<span class="fc bfc" id="L59" title="All 2 branches covered.">		if (displayName.isEmpty()) throw new IllegalArgumentException(&quot;Invalid argument: displayName is empty&quot;);</span>
+<span class="fc bfc" id="L60" title="All 2 branches covered.">		if (birthdate == null) throw new IllegalArgumentException(&quot;Invalid argument: birthdate is null&quot;);</span>
+<span class="fc bfc" id="L61" title="All 2 branches covered.">		if (gender == null) throw new IllegalArgumentException(&quot;Invalid argument: gender is null&quot;);</span>
+		// gender can be empty string
+<span class="fc bfc" id="L63" title="All 2 branches covered.">		if (teacherNotes == null) throw new IllegalArgumentException(&quot;Invalid argument: teacherNotes is null&quot;);</span>
+		// notes can be empty string
+<span class="fc bfc" id="L65" title="All 2 branches covered.">		if (phone1 == null) throw new IllegalArgumentException(&quot;Invalid argument: phone1 is null&quot;);</span>
+		// phone1 can be empty string
+<span class="fc bfc" id="L67" title="All 2 branches covered.">		if (phone2 == null) throw new IllegalArgumentException(&quot;Invalid argument: phone2 is null&quot;);</span>
+		// phone2 can be empty string
+<span class="fc bfc" id="L69" title="All 2 branches covered.">		if (email == null) throw new IllegalArgumentException(&quot;Invalid argument: email is null&quot;);</span>
+		// email can be empty string
+
+<span class="fc" id="L72">		this.recID = recID;</span>
+<span class="fc" id="L73">		this.loginName = loginName;</span>
+<span class="fc" id="L74">		this.passwordHash = passwordHash;</span>
+<span class="fc" id="L75">		this.displayName = displayName;</span>
+<span class="fc" id="L76">		this.birthdate = birthdate;</span>
+<span class="fc" id="L77">		this.gender = gender;</span>
+<span class="fc" id="L78">		this.teacherNotes = teacherNotes;</span>
+<span class="fc" id="L79">		this.phone1 = phone1;</span>
+<span class="fc" id="L80">		this.phone2 = phone2;</span>
+<span class="fc" id="L81">		this.email = email;</span>
+<span class="fc" id="L82">		this.isStudent = isStudent;</span>
+<span class="fc" id="L83">		this.isInstructor = isInstructor;</span>
+<span class="fc" id="L84">		this.isAdmin = isAdmin;</span>
+<span class="fc" id="L85">	}</span>
+
+	// ----------------------------------------------------------------
+
+	public int getRecID() {
+<span class="fc" id="L90">		return this.recID;</span>
+	}
+
+	public void setRecID(int recID) {
+		// Updates the recID of POJOs that have just been added to the database
+<span class="fc bfc" id="L95" title="All 2 branches covered.">		if (recID &lt;= 0) throw new IllegalArgumentException(&quot;setRecID: recID cannot be negative.&quot;);</span>
+<span class="fc bfc" id="L96" title="All 2 branches covered.">		if (this.recID != -1) throw new IllegalArgumentException(&quot;setRecID: Object has already been added to the database (recID != 1).&quot;);</span>
+
+<span class="fc" id="L98">		this.recID = recID;</span>
+<span class="fc" id="L99">	}</span>
+
+	// ----------------------------------------------------------------
+
+	public String getLoginName() {
+<span class="fc" id="L104">		return this.loginName;</span>
+	}
+
+	public String getPasswordHash() {
+<span class="fc" id="L108">		return this.passwordHash;</span>
+	}
+
+	public String getName() {
+<span class="fc" id="L112">		return this.loginName + &quot;/&quot; + this.displayName;</span>
+	}
+
+	public String getDisplayName() {
+<span class="fc" id="L116">		return this.displayName;</span>
+	}
+
+	public Timestamp getBirthdate() {
+<span class="fc" id="L120">		return this.birthdate;</span>
+	}
+
+	public LocalDate getBirthDate() {
+<span class="nc" id="L124">		return this.birthdate.toLocalDateTime().toLocalDate();</span>
+	}
+
+	public String getBirthDateFormatted() {
+<span class="nc" id="L128">		return this.birthdate.toLocalDateTime().toLocalDate().format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM));</span>
+	}
+
+	public int getAge() {
+<span class="fc" id="L132">		return DateHelpers.calculateAgeFrom(this.birthdate);</span>
+	}
+
+	public String getGender() {
+<span class="fc" id="L136">		return this.gender;</span>
+	}
+
+	public String getGenderWord() {
+<span class="nc bnc" id="L140" title="All 4 branches missed.">		switch (this.gender) {</span>
+			case &quot;m&quot;:
+<span class="nc" id="L142">				return &quot;Male&quot;;</span>
+			case &quot;f&quot;:
+<span class="nc" id="L144">				return &quot;Female&quot;;</span>
+			case &quot;&quot;:
+<span class="nc" id="L146">				return &quot;Other/Unspecified&quot;;</span>
+			default:
+<span class="nc" id="L148">				return &quot;[ &quot; + this.gender + &quot; ]&quot;;</span>
+		}
+	}
+
+	public String getTeacherNotes() {
+<span class="fc" id="L153">		return this.teacherNotes;</span>
+	}
+
+	public String getPhone1() {
+<span class="fc" id="L157">		return this.phone1;</span>
+	}
+
+	public String getPhone2() {
+<span class="fc" id="L161">		return this.phone2;</span>
+	}
+
+	public String getEmail() {
+<span class="fc" id="L165">		return this.email;</span>
+	}
+
+	public boolean getIsStudent() {
+<span class="fc" id="L169">		return this.isStudent;</span>
+	}
+
+	public boolean getIsInstructor() {
+<span class="fc" id="L173">		return this.isInstructor;</span>
+	}
+
+	public boolean getIsAdmin() {
+<span class="fc" id="L177">		return this.isAdmin;</span>
+	}
+
+	// ----------------------------------------------------------------
+
+	public void setLoginName(String loginName) {
+<span class="fc bfc" id="L183" title="All 2 branches covered.">		if (loginName == null) throw new IllegalArgumentException(&quot;Invalid argument: loginName is null&quot;);</span>
+<span class="fc bfc" id="L184" title="All 2 branches covered.">		if (loginName.isEmpty()) throw new IllegalArgumentException(&quot;Invalid argument: loginName is empty&quot;);</span>
+
+<span class="fc" id="L186">		this.loginName = loginName;</span>
+<span class="fc" id="L187">	}</span>
+
+	public void setPasswordHash(String passwordHash) {
+<span class="fc bfc" id="L190" title="All 2 branches covered.">		if (passwordHash == null) throw new IllegalArgumentException(&quot;Invalid argument: passwordHash is null&quot;);</span>
+<span class="fc bfc" id="L191" title="All 2 branches covered.">		if (passwordHash.isEmpty()) throw new IllegalArgumentException(&quot;Invalid argument: passwordHash is empty&quot;);</span>
+		// TODO: SHA1 Password Hash should be 40 chars long -- need hashing first
+
+<span class="fc" id="L194">		this.passwordHash = passwordHash;</span>
+<span class="fc" id="L195">	}</span>
+
+	public void setDisplayName(String name) {
+<span class="fc bfc" id="L198" title="All 2 branches covered.">		if (name == null) throw new IllegalArgumentException(&quot;Invalid argument: name is null&quot;);</span>
+<span class="fc bfc" id="L199" title="All 2 branches covered.">		if (name.isEmpty()) throw new IllegalArgumentException(&quot;Invalid argument: name is empty&quot;);</span>
+
+<span class="fc" id="L201">		this.displayName = name;</span>
+<span class="fc" id="L202">	}</span>
+
+	public void setBirthdate(int years, int months, int days, int hours, int minutes, int seconds) {
+		//TODO: validate integers
+
+<span class="fc" id="L207">		setBirthdate(DateHelpers.toTimestamp(years, months, days, hours, minutes, seconds));</span>
+<span class="fc" id="L208">	}</span>
+
+	public void setBirthdate(Timestamp birthdate) {
+<span class="fc bfc" id="L211" title="All 2 branches covered.">		if (birthdate == null) throw new IllegalArgumentException(&quot;Invalid argument: birthdate is null&quot;);</span>
+
+<span class="fc" id="L213">		this.birthdate = birthdate;</span>
+<span class="fc" id="L214">	}</span>
+
+	public void setGender(String gender) {
+<span class="fc bfc" id="L217" title="All 2 branches covered.">		if (gender == null) throw new IllegalArgumentException(&quot;Invalid argument: gender is null&quot;);</span>
+		// can be empty string
+
+<span class="fc" id="L220">		this.gender = gender;</span>
+<span class="fc" id="L221">	}</span>
+
+	public void setTeacherNotes(String teacherNotes) {
+<span class="fc bfc" id="L224" title="All 2 branches covered.">		if (teacherNotes == null) throw new IllegalArgumentException(&quot;Invalid argument: teacherNotes is null&quot;);</span>
+		// can be empty string
+
+<span class="fc" id="L227">		this.teacherNotes = teacherNotes;</span>
+<span class="fc" id="L228">	}</span>
+
+	public void setPhone1(String phone1) {
+<span class="fc" id="L231">		this.phone1 = phone1;</span>
+<span class="fc" id="L232">	}</span>
+
+	public void setPhone2(String phone2) {
+<span class="fc" id="L235">		this.phone2 = phone2;</span>
+<span class="fc" id="L236">	}</span>
+
+	public void setEmail(String email) {
+<span class="fc" id="L239">		this.email = email;</span>
+<span class="fc" id="L240">	}</span>
+
+	public void setIsStudent(boolean isStudent) {
+<span class="fc" id="L243">		this.isStudent = isStudent;</span>
+<span class="fc" id="L244">	}</span>
+
+	public void setIsInstructor(boolean isInstructor) {
+<span class="fc" id="L247">		this.isInstructor = isInstructor;</span>
+<span class="fc" id="L248">	}</span>
+
+	public void setIsAdmin(boolean isAdmin) {
+<span class="fc" id="L251">		this.isAdmin = isAdmin;</span>
+<span class="fc" id="L252">	}</span>
+
+	// ----------------------------------------------------------------
+
+	@Override
+	public String toString() {
+<span class="fc" id="L258">		String recordLogin = &quot;(R:&quot; + this.recID + &quot;/L:&quot; + this.loginName + &quot;) &quot;;</span>
+<span class="fc bfc" id="L259" title="All 6 branches covered.">		String permissions = (this.isStudent ? &quot;1&quot; : &quot;0&quot;) + &quot;-&quot; + (this.isInstructor ? &quot;1&quot; : &quot;0&quot;) + &quot;-&quot;	+ (this.isAdmin ? &quot;1&quot; : &quot;0&quot;);</span>
+<span class="fc" id="L260">		String ageGenderPermissions = &quot; (A:&quot; + this.getAge() + &quot;/G:&quot; + this.gender	+ &quot;/P:&quot; + permissions + &quot;)&quot;;</span>
+
+<span class="fc" id="L262">		return recordLogin + this.displayName + ageGenderPermissions;</span>
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+<span class="fc bfc" id="L267" title="All 2 branches covered.">		if (obj == null) return false; // can't be same as null</span>
+<span class="fc bfc" id="L268" title="All 2 branches covered.">		if (obj == this) return true; // same as self is automatically true</span>
+<span class="fc bfc" id="L269" title="All 2 branches covered.">		if (!(obj instanceof Member)) return false; // must be same type of object</span>
+
+<span class="fc" id="L271">		Member other = (Member) obj; // cast to compare fields</span>
+<span class="fc bfc" id="L272" title="All 2 branches covered.">		if (this.recID != other.recID) return false;</span>
+<span class="fc bfc" id="L273" title="All 2 branches covered.">		if (!this.loginName.equals(other.loginName)) return false;</span>
+<span class="fc bfc" id="L274" title="All 2 branches covered.">		if (!this.passwordHash.equals(other.passwordHash)) return false;</span>
+<span class="fc bfc" id="L275" title="All 2 branches covered.">		if (!this.displayName.equals(other.displayName)) return false;</span>
+<span class="fc bfc" id="L276" title="All 2 branches covered.">		if (!this.birthdate.equals(other.birthdate)) return false;</span>
+<span class="fc bfc" id="L277" title="All 2 branches covered.">		if (!this.gender.equals(other.gender)) return false;</span>
+<span class="fc bfc" id="L278" title="All 2 branches covered.">		if (!this.teacherNotes.equals(other.teacherNotes)) return false;</span>
+<span class="fc bfc" id="L279" title="All 2 branches covered.">		if (!this.phone1.equals(other.phone1)) return false;</span>
+<span class="fc bfc" id="L280" title="All 2 branches covered.">		if (!this.phone2.equals(other.phone2)) return false;</span>
+<span class="fc bfc" id="L281" title="All 2 branches covered.">		if (!this.email.equals(other.email)) return false;</span>
+<span class="fc bfc" id="L282" title="All 2 branches covered.">		if (this.isStudent != other.isStudent) return false;</span>
+<span class="fc bfc" id="L283" title="All 2 branches covered.">		if (this.isInstructor != other.isInstructor) return false;</span>
+<span class="fc bfc" id="L284" title="All 2 branches covered.">		if (this.isAdmin != other.isAdmin) return false;</span>
+
+		// no failures, good match
+<span class="fc" id="L287">		return true;</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

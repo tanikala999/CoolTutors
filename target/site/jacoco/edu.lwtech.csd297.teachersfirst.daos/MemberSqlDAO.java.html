@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MemberSqlDAO.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">teachersFirst</a> &gt; <a href="index.source.html" class="el_package">edu.lwtech.csd297.teachersfirst.daos</a> &gt; <span class="el_source">MemberSqlDAO.java</span></div><h1>MemberSqlDAO.java</h1><pre class="source lang-java linenums">package edu.lwtech.csd297.teachersfirst.daos;
+
+import java.sql.*;
+import java.util.*;
+
+import org.apache.logging.log4j.*;
+
+import edu.lwtech.csd297.teachersfirst.*;
+import edu.lwtech.csd297.teachersfirst.pojos.*;
+
+public class MemberSqlDAO implements DAO&lt;Member&gt; {
+	
+<span class="fc" id="L13">	private static final Logger logger = LogManager.getLogger(MemberSqlDAO.class.getName());</span>
+
+<span class="fc" id="L15">	private Connection conn = null;</span>
+
+<span class="fc" id="L17">	public MemberSqlDAO() {</span>
+<span class="fc" id="L18">		this.conn = null;                                   // conn must be created during init()</span>
+<span class="fc" id="L19">	}</span>
+
+	public boolean initialize(String initParams) {
+<span class="fc" id="L22">		logger.info(&quot;Connecting to the database...&quot;);</span>
+
+<span class="fc" id="L24">		conn = SQLUtils.connect(initParams);</span>
+<span class="pc bpc" id="L25" title="1 of 2 branches missed.">		if (conn == null) {</span>
+<span class="nc" id="L26">			logger.error(&quot;Unable to connect to SQL Database: &quot; + initParams);</span>
+<span class="nc" id="L27">			return false;</span>
+		}
+<span class="fc" id="L29">		logger.info(&quot;...connected!&quot;);</span>
+
+<span class="fc" id="L31">		return true;</span>
+	}
+
+	public void terminate() {
+<span class="fc" id="L35">		SQLUtils.disconnect(conn);</span>
+<span class="fc" id="L36">		conn = null;</span>
+<span class="fc" id="L37">	}</span>
+
+	public int insert(Member member) {
+<span class="nc" id="L40">		logger.debug(&quot;Inserting &quot; + member + &quot;...&quot;);</span>
+
+<span class="nc bnc" id="L42" title="All 2 branches missed.">		if (member.getRecID() != -1) {</span>
+<span class="nc" id="L43">			logger.error(&quot;Attempting to add previously added Member: &quot; + member);</span>
+<span class="nc" id="L44">			return -1;</span>
+		}
+
+<span class="nc" id="L47">		String query = &quot;INSERT INTO Members (loginName, passwordHash, displayName, birthdate, gender, teacherNotes, phone1, phone2, email, isStudent, isInstructor, isAdmin) VALUES (?,SHA1(?),?,?,?,?,?,?,?,?,?,?)&quot;;</span>
+
+<span class="nc" id="L49">		int recID = SQLUtils.executeSqlMemberInsert(conn, query, member.getRecID(), member.getLoginName(), member.getPasswordHash(), member.getDisplayName(), member.getBirthdate(), member.getGender(), member.getTeacherNotes(), member.getPhone1(), member.getPhone2(), member.getEmail(), member.getIsStudent(), member.getIsInstructor(), member.getIsAdmin());</span>
+		
+<span class="nc" id="L51">		logger.debug(&quot;Member successfully inserted with ID = &quot; + recID);</span>
+<span class="nc" id="L52">		return recID;</span>
+	}
+
+	public Member retrieveByID(int recID) {
+		//logger.debug(&quot;Trying to get Member with ID: &quot; + recID);
+		
+<span class="nc" id="L58">		String query = &quot;SELECT recID, loginName, passwordHash, displayName, birthdate, teacherNotes, gender, phone1, phone2, email, isStudent, isInstructor, isAdmin&quot;;</span>
+<span class="nc" id="L59">		query += &quot; FROM Members WHERE recID=&quot; + recID;</span>
+
+<span class="nc" id="L61">		List&lt;SQLRow&gt; rows = SQLUtils.executeSQL(conn, query);</span>
+<span class="nc bnc" id="L62" title="All 4 branches missed.">		if (rows == null || rows.size() == 0) {</span>
+<span class="nc" id="L63">			logger.debug(&quot;Did not find member.&quot;);</span>
+<span class="nc" id="L64">			return null;</span>
+		}
+		
+<span class="nc" id="L67">		SQLRow row = rows.get(0);</span>
+<span class="nc" id="L68">		Member member = convertRowToMember(row);</span>
+<span class="nc" id="L69">		return member;</span>
+	}
+
+	public Member retrieveByLoginName(String loginName) {
+		//logger.debug(&quot;Trying to get Member with login name: &quot; + loginName);
+		
+<span class="nc" id="L75">		String query = &quot;SELECT * FROM Members WHERE loginName='&quot; + loginName +&quot;'&quot;;</span>
+
+<span class="nc" id="L77">		List&lt;SQLRow&gt; rows = SQLUtils.executeSQL(conn, query);</span>
+<span class="nc bnc" id="L78" title="All 4 branches missed.">		if (rows == null || rows.size() == 0) {</span>
+<span class="nc" id="L79">			logger.debug(&quot;Did not find member.&quot;);</span>
+<span class="nc" id="L80">			return null;</span>
+		}
+		
+<span class="nc" id="L83">		SQLRow row = rows.get(0);</span>
+<span class="nc" id="L84">		Member member = convertRowToMember(row);</span>
+<span class="nc" id="L85">		return member;</span>
+	}
+
+	public Member retrieveByLoginNameAndPassword(String loginName, String passwordHash) {
+		//logger.debug(&quot;Trying to get Member with login name and password: &quot; + loginName + &quot; &quot; + passwordHash);
+		
+<span class="fc" id="L91">		String query = &quot;SELECT * FROM Members WHERE loginName='&quot; + loginName +&quot;' AND passwordHash=SHA1('&quot;+passwordHash+&quot;');&quot;;</span>
+
+<span class="fc" id="L93">		List&lt;SQLRow&gt; rows = SQLUtils.executeSQL(conn, query);</span>
+<span class="pc bpc" id="L94" title="1 of 4 branches missed.">		if (rows == null || rows.size() == 0) {</span>
+<span class="fc" id="L95">			logger.debug(&quot;Did not find member.&quot;);</span>
+<span class="fc" id="L96">			return null;</span>
+		}
+		
+<span class="fc" id="L99">		SQLRow row = rows.get(0);</span>
+<span class="fc" id="L100">		Member member = convertRowToMember(row);</span>
+<span class="fc" id="L101">		return member;</span>
+	}
+	
+	public Member retrieveByIndex(int index) {
+		//logger.debug(&quot;Trying to get Member with index: &quot; + index);
+		
+<span class="nc" id="L107">		index++;</span>
+
+<span class="nc bnc" id="L109" title="All 2 branches missed.">		if (index &lt; 1) {</span>
+<span class="nc" id="L110">			logger.debug(&quot;retrieveByIndex: index cannot be negative&quot;);</span>
+<span class="nc" id="L111">			return null;</span>
+		}
+
+<span class="nc" id="L114">		String query = &quot;SELECT recID, loginName, passwordHash, displayName, birthdate, gender, teacherNotes, phone1, phone2, email, isStudent, isInstructor, isAdmin&quot;;</span>
+<span class="nc" id="L115">		query += &quot; FROM Members ORDER BY recID LIMIT &quot; + index;</span>
+
+<span class="nc" id="L117">		List&lt;SQLRow&gt; rows = SQLUtils.executeSQL(conn, query);</span>
+<span class="nc bnc" id="L118" title="All 4 branches missed.">		if (rows == null || rows.size() == 0) {</span>
+<span class="nc" id="L119">			logger.debug(&quot;Did not find member.&quot;);</span>
+<span class="nc" id="L120">			return null;</span>
+		}
+		
+<span class="nc" id="L123">		SQLRow row = rows.get(rows.size() - 1);</span>
+<span class="nc" id="L124">		Member member = convertRowToMember(row);</span>
+<span class="nc" id="L125">		return member;</span>
+	}
+	
+	public List&lt;Member&gt; retrieveAll() {
+<span class="nc" id="L129">		logger.debug(&quot;Getting all Members...&quot;);</span>
+		
+<span class="nc" id="L131">		String query = &quot;SELECT recID, loginName, passwordHash, displayName, birthdate, gender, teacherNotes, phone1, phone2, email, isStudent, isInstructor, isAdmin&quot;;</span>
+<span class="nc" id="L132">		query += &quot; FROM Members ORDER BY recID&quot;;</span>
+
+<span class="nc" id="L134">		List&lt;SQLRow&gt; rows = SQLUtils.executeSQL(conn, query);</span>
+<span class="nc bnc" id="L135" title="All 4 branches missed.">		if (rows == null || rows.size() == 0) {</span>
+<span class="nc" id="L136">			logger.debug(&quot;No members found!&quot;);</span>
+<span class="nc" id="L137">			return null;</span>
+		}
+
+<span class="nc" id="L140">		List&lt;Member&gt; members = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L141" title="All 2 branches missed.">		for (SQLRow row : rows) {</span>
+<span class="nc" id="L142">			Member member = convertRowToMember(row);</span>
+<span class="nc" id="L143">			members.add(member);</span>
+<span class="nc" id="L144">		}</span>
+<span class="nc" id="L145">		return members;</span>
+	}
+	
+	public List&lt;Integer&gt; retrieveAllIDs() {
+<span class="nc" id="L149">		logger.debug(&quot;Getting all Member IDs...&quot;);</span>
+
+<span class="nc" id="L151">		String query = &quot;SELECT recID FROM Members ORDER BY recID&quot;;</span>
+
+<span class="nc" id="L153">		List&lt;SQLRow&gt; rows = SQLUtils.executeSQL(conn, query);</span>
+<span class="nc bnc" id="L154" title="All 4 branches missed.">		if (rows == null || rows.size() == 0) {</span>
+<span class="nc" id="L155">			logger.debug(&quot;No members found!&quot;);</span>
+<span class="nc" id="L156">			return null;</span>
+		}
+		
+<span class="nc" id="L159">		List&lt;Integer&gt; recIDs = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L160" title="All 2 branches missed.">		for (SQLRow row : rows) {</span>
+<span class="nc" id="L161">			String value = row.getItem(&quot;recID&quot;);</span>
+<span class="nc" id="L162">			int i = Integer.parseInt(value);</span>
+<span class="nc" id="L163">			recIDs.add(i);</span>
+<span class="nc" id="L164">		}</span>
+<span class="nc" id="L165">		return recIDs;</span>
+	}
+
+	public List&lt;Member&gt; search(String keyword) {
+<span class="nc" id="L169">		logger.debug(&quot;Searching for member with '&quot; + keyword + &quot;'&quot;);</span>
+
+<span class="nc" id="L171">		String query = &quot;SELECT recID, loginName, passwordHash, displayName, birthdate, gender, teacherNotes, phone1, phone2, email, isStudent, isInstructor, isAdmin FROM Members WHERE&quot;;</span>
+<span class="nc" id="L172">		query += &quot; username like ?&quot;;</span>
+<span class="nc" id="L173">		query += &quot; ORDER BY recID&quot;;</span>
+
+<span class="nc" id="L175">		keyword = &quot;%&quot; + keyword + &quot;%&quot;;</span>
+
+<span class="nc" id="L177">		List&lt;SQLRow&gt; rows = SQLUtils.executeSQL(conn, query, keyword);</span>
+<span class="nc bnc" id="L178" title="All 4 branches missed.">		if (rows == null || rows.size() == 0) {</span>
+<span class="nc" id="L179">			logger.debug(&quot;No members found!&quot;);</span>
+<span class="nc" id="L180">			return null;</span>
+		}
+
+<span class="nc" id="L183">		List&lt;Member&gt; members = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L184" title="All 2 branches missed.">		for (SQLRow row : rows) {</span>
+<span class="nc" id="L185">			Member member = convertRowToMember(row);</span>
+<span class="nc" id="L186">			members.add(member);</span>
+<span class="nc" id="L187">		}</span>
+<span class="nc" id="L188">		return members;</span>
+	}
+
+	public boolean update(Member member) {
+<span class="nc" id="L192">		throw new UnsupportedOperationException(&quot;Unable to update existing member in database.&quot;);</span>
+	}
+
+	public void delete(int recID) {
+<span class="nc" id="L196">		logger.debug(&quot;Trying to delete Member with ID: &quot; + recID);</span>
+
+<span class="nc" id="L198">		String query = &quot;DELETE FROM Members WHERE recID=&quot; + recID;</span>
+<span class="nc" id="L199">		SQLUtils.executeSQL(conn, query);</span>
+<span class="nc" id="L200">	}</span>
+	
+	public int size() {
+<span class="nc" id="L203">		logger.debug(&quot;Getting the number of rows...&quot;);</span>
+
+<span class="nc" id="L205">		String query = &quot;SELECT count(*) AS cnt FROM Members&quot;;</span>
+
+<span class="nc" id="L207">		List&lt;SQLRow&gt; rows = SQLUtils.executeSQL(conn, query);</span>
+<span class="nc bnc" id="L208" title="All 4 branches missed.">		if (rows == null || rows.size() == 0) {</span>
+<span class="nc" id="L209">			logger.error(&quot;No members found!&quot;);</span>
+<span class="nc" id="L210">			return 0;</span>
+		}
+
+<span class="nc" id="L213">		String value = rows.get(0).getItem(&quot;cnt&quot;);</span>
+<span class="nc" id="L214">		return Integer.parseInt(value);</span>
+	}    
+
+	// =====================================================================
+
+	private Member convertRowToMember(SQLRow row) {
+<span class="fc" id="L220">		logger.debug(&quot;Converting &quot; + row + &quot; to Member...&quot;);</span>
+<span class="fc" id="L221">		int recID = Integer.parseInt(row.getItem(&quot;recID&quot;));</span>
+<span class="fc" id="L222">		String loginName = row.getItem(&quot;loginName&quot;);</span>
+<span class="fc" id="L223">		String passwordHash = row.getItem(&quot;passwordHash&quot;);</span>
+<span class="fc" id="L224">		String displayName = row.getItem(&quot;displayName&quot;);</span>
+		
+<span class="fc" id="L226">		Timestamp birthdate = DateHelpers.fromSqlDateToTimestamp(row.getItem(&quot;birthdate&quot;));</span>
+
+<span class="fc" id="L228">		String gender = row.getItem(&quot;gender&quot;);</span>
+<span class="fc" id="L229">		String teacherNotes = row.getItem(&quot;teacherNotes&quot;);</span>
+<span class="fc" id="L230">		String phone1 = row.getItem(&quot;phone1&quot;);</span>
+<span class="fc" id="L231">		String phone2 = row.getItem(&quot;phone2&quot;);</span>
+<span class="fc" id="L232">		String email = row.getItem(&quot;email&quot;);</span>
+<span class="fc" id="L233">		Boolean isStudent = integerToBoolean(Integer.parseInt(row.getItem(&quot;isStudent&quot;)));</span>
+<span class="fc" id="L234">		Boolean isInstructor = integerToBoolean(Integer.parseInt(row.getItem(&quot;isInstructor&quot;)));</span>
+<span class="fc" id="L235">		Boolean isAdmin = integerToBoolean(Integer.parseInt(row.getItem(&quot;isAdmin&quot;)));</span>
+<span class="fc" id="L236">		return new Member(recID, loginName, passwordHash, displayName, birthdate, gender, teacherNotes, phone1, phone2, email, isStudent, isInstructor, isAdmin);</span>
+	}
+
+	private boolean integerToBoolean(int x){
+<span class="fc bfc" id="L240" title="All 2 branches covered.">		if(x == 0){</span>
+<span class="fc" id="L241">			return false;</span>
+		}else{
+<span class="fc" id="L243">			return true;</span>
+		}
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

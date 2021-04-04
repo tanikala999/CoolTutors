@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DiagnosticsPage.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">teachersFirst</a> &gt; <a href="index.source.html" class="el_package">edu.lwtech.csd297.teachersfirst.pages</a> &gt; <span class="el_source">DiagnosticsPage.java</span></div><h1>DiagnosticsPage.java</h1><pre class="source lang-java linenums">package edu.lwtech.csd297.teachersfirst.pages;
+
+import java.util.*;
+import javax.servlet.http.*;
+
+import edu.lwtech.csd297.teachersfirst.*;
+import edu.lwtech.csd297.teachersfirst.daos.*;
+import edu.lwtech.csd297.teachersfirst.pojos.*;
+
+public class DiagnosticsPage extends PageLoader {
+
+	// Constructor
+<span class="nc" id="L13">	public DiagnosticsPage(HttpServletRequest request, HttpServletResponse response) { super(request, response); }</span>
+
+	// Page-specific
+
+	@Override
+	public void loadPage() {
+		
+		// Get initial bit to verify ID and operation
+<span class="nc" id="L21">		final String clientIp = request.getRemoteAddr();</span>
+
+		// Check if whitelisted
+<span class="nc bnc" id="L24" title="All 2 branches missed.">		if (!Security.isWhitelisted(clientIp)) {</span>
+<span class="nc" id="L25">			sendFake404(&quot;Unauthorized user attempted to access diagnostics page.&quot;);</span>
+<span class="nc" id="L26">			return;</span>
+		}
+
+		// Get needed information dump data
+<span class="nc bnc" id="L30" title="All 2 branches missed.">		final String clientHost = request.getRemoteHost() == clientIp ? &quot;same as IP or resolution disabled&quot; : request.getRemoteHost();</span>
+<span class="nc bnc" id="L31" title="All 2 branches missed.">		final String httpType = request.isSecure() ? &quot;HTTPS&quot; : &quot;_http_&quot;;</span>
+<span class="nc bnc" id="L32" title="All 2 branches missed.">		final String pathInfo = request.getPathInfo() == null ? &quot;&quot; : request.getPathInfo();</span>
+<span class="nc bnc" id="L33" title="All 2 branches missed.">		final String uriPath = request.getRequestURI() == null ? &quot;&quot; : request.getRequestURI();</span>
+<span class="nc" id="L34">		final String sanitizedQuery = QueryHelpers.getSanitizedFullQueryString(request);</span>
+<span class="nc" id="L35">		final Map&lt;String, String[]&gt; paramMap = request.getParameterMap();</span>
+<span class="nc" id="L36">		final Map&lt;String, String[]&gt; headerItems = dumpHeaderToMap(request);</span>
+
+<span class="nc" id="L38">		final DAO&lt;Member&gt; memberDAO = DataManager.getMemberDAO();</span>
+<span class="nc bnc" id="L39" title="All 2 branches missed.">		final String memberDaoCheck1 = memberDAO != null ? &quot;Member DAO Found&quot; : &quot;NULL MEMBER DAO&quot;;</span>
+<span class="nc bnc" id="L40" title="All 2 branches missed.">		final Member member = memberDAO != null ? memberDAO.retrieveByIndex(0) : null;</span>
+<span class="nc bnc" id="L41" title="All 2 branches missed.">		final String memberDaoCheck2 = member != null ? &quot;Member Item Found&quot; : &quot;NO MEMBER ITEM COULD BE RETRIEVED&quot;;</span>
+
+<span class="nc" id="L43">		final DAO&lt;Opening&gt; openingDAO = DataManager.getOpeningDAO();</span>
+<span class="nc bnc" id="L44" title="All 2 branches missed.">		final String openingDaoCheck1 = openingDAO != null ? &quot;Opening DAO Found&quot; : &quot;NULL OPENING DAO&quot;;</span>
+<span class="nc bnc" id="L45" title="All 2 branches missed.">		final Opening opening = openingDAO != null ? openingDAO.retrieveByIndex(0) : null;</span>
+<span class="nc bnc" id="L46" title="All 2 branches missed.">		final String openingDaoCheck2 = opening != null ? &quot;Opening Item Found&quot; : &quot;NO OPENING ITEM COULD BE RETRIEVED&quot;;</span>
+
+<span class="nc" id="L48">		final DAO&lt;Appointment&gt; appointmentDAO = DataManager.getAppointmentDAO();</span>
+<span class="nc bnc" id="L49" title="All 2 branches missed.">		final String appointmentDaoCheck1 = appointmentDAO != null ? &quot;Appointment DAO Found&quot; : &quot;NULL APPOINTMENT DAO&quot;;</span>
+<span class="nc bnc" id="L50" title="All 2 branches missed.">		final Appointment appointment = appointmentDAO != null ? appointmentDAO.retrieveByIndex(0) : null;</span>
+<span class="nc bnc" id="L51" title="All 2 branches missed.">		final String appointmentDaoCheck2 = appointment != null ? &quot;Appointment Item Found&quot; : &quot;NO APPOINTMENT ITEM COULD BE RETRIEVED&quot;;</span>
+
+		// FreeMarker
+<span class="nc" id="L54">		templateName = &quot;diagnostics.ftl&quot;;</span>
+<span class="nc" id="L55">		templateDataMap.put(&quot;clientIp&quot;, clientIp);</span>
+<span class="nc" id="L56">		templateDataMap.put(&quot;clientHost&quot;, clientHost);</span>
+<span class="nc" id="L57">		templateDataMap.put(&quot;httpType&quot;, httpType);</span>
+<span class="nc" id="L58">		templateDataMap.put(&quot;pathInfo&quot;, pathInfo);</span>
+<span class="nc" id="L59">		templateDataMap.put(&quot;uriPath&quot;, uriPath);</span>
+<span class="nc" id="L60">		templateDataMap.put(&quot;fullQuery&quot;, sanitizedQuery);</span>
+<span class="nc" id="L61">		templateDataMap.put(&quot;paramMap&quot;, paramMap);</span>
+<span class="nc" id="L62">		templateDataMap.put(&quot;headerItems&quot;, headerItems);</span>
+<span class="nc" id="L63">		templateDataMap.put(&quot;memberDaoCheck1&quot;, memberDaoCheck1);</span>
+<span class="nc" id="L64">		templateDataMap.put(&quot;memberDaoCheck2&quot;, memberDaoCheck2);</span>
+<span class="nc" id="L65">		templateDataMap.put(&quot;openingDaoCheck1&quot;, openingDaoCheck1);</span>
+<span class="nc" id="L66">		templateDataMap.put(&quot;openingDaoCheck2&quot;, openingDaoCheck2);</span>
+<span class="nc" id="L67">		templateDataMap.put(&quot;appointmentDaoCheck1&quot;, appointmentDaoCheck1);</span>
+<span class="nc" id="L68">		templateDataMap.put(&quot;appointmentDaoCheck2&quot;, appointmentDaoCheck2);</span>
+
+		// Go
+<span class="nc" id="L71">		trySendResponse();</span>
+<span class="nc" id="L72">	}</span>
+
+	private Map&lt;String, String[]&gt; dumpHeaderToMap(HttpServletRequest request) {
+<span class="nc" id="L75">		final Enumeration&lt;String&gt; allHeaderNames = request.getHeaderNames();</span>
+
+<span class="nc" id="L77">		Map&lt;String, String[]&gt; result = new HashMap&lt;&gt;();</span>
+<span class="nc bnc" id="L78" title="All 2 branches missed.">		while (allHeaderNames.hasMoreElements()) {</span>
+<span class="nc" id="L79">			String next = allHeaderNames.nextElement();</span>
+<span class="nc" id="L80">			Enumeration&lt;String&gt; values = request.getHeaders(next);</span>
+<span class="nc" id="L81">			List&lt;String&gt; t = new ArrayList&lt;&gt;(); // should only ever have one value each but just in case</span>
+<span class="nc bnc" id="L82" title="All 2 branches missed.">			while (values.hasMoreElements()) {</span>
+<span class="nc" id="L83">				t.add(values.nextElement());</span>
+			}
+<span class="nc" id="L85">			result.put(next, t.toArray(new String[0]));</span>
+<span class="nc" id="L86">		}</span>
+<span class="nc" id="L87">		return result;</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

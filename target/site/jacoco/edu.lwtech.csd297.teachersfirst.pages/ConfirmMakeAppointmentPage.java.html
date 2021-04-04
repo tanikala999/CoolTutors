@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ConfirmMakeAppointmentPage.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">teachersFirst</a> &gt; <a href="index.source.html" class="el_package">edu.lwtech.csd297.teachersfirst.pages</a> &gt; <span class="el_source">ConfirmMakeAppointmentPage.java</span></div><h1>ConfirmMakeAppointmentPage.java</h1><pre class="source lang-java linenums">package edu.lwtech.csd297.teachersfirst.pages;
+
+import java.text.DateFormat;
+import java.time.*;
+import java.time.format.*;
+import java.util.*;
+import javax.servlet.http.*;
+
+import edu.lwtech.csd297.teachersfirst.*;
+import edu.lwtech.csd297.teachersfirst.pojos.*;
+
+public class ConfirmMakeAppointmentPage extends PageLoader {
+
+	// Constructor
+<span class="nc" id="L15">	public ConfirmMakeAppointmentPage(HttpServletRequest request, HttpServletResponse response) { super(request, response); }</span>
+
+	// Page-specific
+
+	@Override
+	public void loadPage() {
+<span class="nc" id="L21">		templateDataMap.put(&quot;title&quot;, &quot;Confirm Appointment&quot;);</span>
+
+<span class="nc bnc" id="L23" title="All 2 branches missed.">		if (uid &gt; 0) {</span>
+			
+			// Get Data
+<span class="nc" id="L26">			final String openingIdString = QueryHelpers.getPost(request, &quot;openingId&quot;);</span>
+<span class="nc" id="L27">			final String studentIdString = QueryHelpers.getGet(request, &quot;studentId&quot;); // no defaults -- this is confirmation page -- no auto-changes allowed</span>
+			int studentIdInt;
+			try {
+<span class="nc" id="L30">				studentIdInt = Integer.parseInt(studentIdString);</span>
+<span class="nc" id="L31">			} catch (NumberFormatException e) {</span>
+<span class="nc" id="L32">				studentIdInt = 0;</span>
+<span class="nc" id="L33">			}</span>
+<span class="nc bnc" id="L34" title="All 2 branches missed.">			final String studentName = studentIdInt &gt; 0 ? DataManager.getMemberDAO().retrieveByID(studentIdInt).getDisplayName() : &quot;&quot;;</span>
+<span class="nc" id="L35">			final String instructorIdString = QueryHelpers.getGet(request, &quot;instructorId&quot;);</span>
+			int instructorIdInt;
+			try {
+<span class="nc" id="L38">				instructorIdInt = Integer.parseInt(instructorIdString);</span>
+<span class="nc" id="L39">			} catch (NumberFormatException e) {</span>
+<span class="nc" id="L40">				instructorIdInt = 0;</span>
+<span class="nc" id="L41">			}</span>
+<span class="nc bnc" id="L42" title="All 2 branches missed.">			final String instructorName = instructorIdInt &gt; 0 ? DataManager.getMemberDAO().retrieveByID(instructorIdInt).getDisplayName() : &quot;&quot;;</span>
+<span class="nc" id="L43">			final String dateString = QueryHelpers.getGet(request, &quot;date&quot;);</span>
+<span class="nc" id="L44">			final String openingStartTimeString = QueryHelpers.getGet(request, &quot;openingStartTime&quot;);</span>
+<span class="nc" id="L45">			final String openingEndTimeString = QueryHelpers.getGet(request, &quot;openingEndTime&quot;);</span>
+<span class="nc" id="L46">			final String appointmentStartTimeString = QueryHelpers.getGet(request, &quot;appointmentStartTime&quot;);</span>
+<span class="nc" id="L47">			final String appointmentDuration = QueryHelpers.getGet(request, &quot;appointmentDuration&quot;);</span>
+<span class="nc" id="L48">			final String appointmentEndTimeString = DateHelpers.convertDateStartTimeAndDurationToEndTime(dateString, appointmentStartTimeString, appointmentDuration);</span>
+			
+			// FreeMarker
+<span class="nc" id="L51">			templateDataMap.put(&quot;openingId&quot;, openingIdString);</span>
+<span class="nc" id="L52">			templateDataMap.put(&quot;studentId&quot;, studentIdString);</span>
+<span class="nc" id="L53">			templateDataMap.put(&quot;studentName&quot;, studentName);</span>
+<span class="nc" id="L54">			templateDataMap.put(&quot;instructorId&quot;, instructorIdString);</span>
+<span class="nc" id="L55">			templateDataMap.put(&quot;instructorName&quot;, instructorName);</span>
+<span class="nc" id="L56">			templateDataMap.put(&quot;date&quot;, dateString);</span>
+<span class="nc" id="L57">			templateDataMap.put(&quot;openingStartTime&quot;, openingStartTimeString);</span>
+<span class="nc" id="L58">			templateDataMap.put(&quot;openingEndTime&quot;, openingEndTimeString);</span>
+<span class="nc" id="L59">			templateDataMap.put(&quot;appointmentStartTime&quot;, appointmentStartTimeString);</span>
+<span class="nc" id="L60">			templateDataMap.put(&quot;appointmentEndTime&quot;, appointmentEndTimeString);</span>
+		}
+
+		// FreeMarker
+<span class="nc" id="L64">		templateName = &quot;confirmMakeAppointment.ftl&quot;;</span>
+
+		// Go
+<span class="nc" id="L67">		trySendResponse();</span>
+<span class="nc" id="L68">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

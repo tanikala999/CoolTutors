@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>NewOpeningsPage.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">teachersFirst</a> &gt; <a href="index.source.html" class="el_package">edu.lwtech.csd297.teachersfirst.pages</a> &gt; <span class="el_source">NewOpeningsPage.java</span></div><h1>NewOpeningsPage.java</h1><pre class="source lang-java linenums">package edu.lwtech.csd297.teachersfirst.pages;
+
+import java.util.*;
+import javax.servlet.http.*;
+
+import edu.lwtech.csd297.teachersfirst.QueryHelpers;
+import edu.lwtech.csd297.teachersfirst.pojos.*;
+
+public class NewOpeningsPage extends PageLoader {
+
+	// Constructor
+<span class="nc" id="L12">	public NewOpeningsPage(HttpServletRequest request, HttpServletResponse response) { super(request, response); }</span>
+
+	// Page-specific
+
+	@Override
+	public void loadPage() {
+<span class="nc" id="L18">		templateDataMap.put(&quot;title&quot;, &quot;Register&quot;);</span>
+<span class="nc" id="L19">		String instructorIdString = QueryHelpers.getGet(request, &quot;instructorId&quot;, String.valueOf(uid));</span>
+<span class="nc" id="L20">		String startDateString = QueryHelpers.getGet(request, &quot;startDate&quot;);</span>
+<span class="nc" id="L21">		String endDateString = QueryHelpers.getGet(request, &quot;endDate&quot;);</span>
+<span class="nc" id="L22">		String daysOfWeekString = QueryHelpers.getGet(request, &quot;daysOfWeek&quot;); // SuMoTuWdThFrSa</span>
+<span class="nc" id="L23">		String startTimeString = QueryHelpers.getGet(request, &quot;startTime&quot;, &quot;12:00&quot;);</span>
+<span class="nc" id="L24">		String endTimeString = QueryHelpers.getGet(request, &quot;endTime&quot;, &quot;21:00&quot;);</span>
+
+<span class="nc bnc" id="L26" title="All 2 branches missed.">		String sundayChecked = daysOfWeekString.contains(&quot;su&quot;) ? &quot; checked&quot; : &quot;&quot;;</span>
+<span class="nc bnc" id="L27" title="All 2 branches missed.">		String mondayChecked = daysOfWeekString.contains(&quot;mo&quot;) ? &quot; checked&quot; : &quot;&quot;;</span>
+<span class="nc bnc" id="L28" title="All 2 branches missed.">		String tuesdayChecked = daysOfWeekString.contains(&quot;tu&quot;) ? &quot; checked&quot; : &quot;&quot;;</span>
+<span class="nc bnc" id="L29" title="All 2 branches missed.">		String wednesdayChecked = daysOfWeekString.contains(&quot;we&quot;) ? &quot; checked&quot; : &quot;&quot;;</span>
+<span class="nc bnc" id="L30" title="All 2 branches missed.">		String thursdayChecked = daysOfWeekString.contains(&quot;th&quot;) ? &quot; checked&quot; : &quot;&quot;;</span>
+<span class="nc bnc" id="L31" title="All 2 branches missed.">		String fridayChecked = daysOfWeekString.contains(&quot;fr&quot;) ? &quot; checked&quot; : &quot;&quot;;</span>
+<span class="nc bnc" id="L32" title="All 2 branches missed.">		String saturdayChecked = daysOfWeekString.contains(&quot;sa&quot;) ? &quot; checked&quot; : &quot;&quot;;</span>
+
+		// FreeMarker
+<span class="nc" id="L35">		templateDataMap.put(&quot;instructorId&quot;, instructorIdString);</span>
+<span class="nc" id="L36">		templateDataMap.put(&quot;sundayChecked&quot;, sundayChecked);</span>
+<span class="nc" id="L37">		templateDataMap.put(&quot;mondayChecked&quot;, mondayChecked);</span>
+<span class="nc" id="L38">		templateDataMap.put(&quot;tuesdayChecked&quot;, tuesdayChecked);</span>
+<span class="nc" id="L39">		templateDataMap.put(&quot;wednesdayChecked&quot;, wednesdayChecked);</span>
+<span class="nc" id="L40">		templateDataMap.put(&quot;thursdayChecked&quot;, thursdayChecked);</span>
+<span class="nc" id="L41">		templateDataMap.put(&quot;fridayChecked&quot;, fridayChecked);</span>
+<span class="nc" id="L42">		templateDataMap.put(&quot;saturdayChecked&quot;, saturdayChecked);</span>
+<span class="nc" id="L43">		templateDataMap.put(&quot;startDate&quot;, startDateString);</span>
+<span class="nc" id="L44">		templateDataMap.put(&quot;endDate&quot;, endDateString);</span>
+<span class="nc" id="L45">		templateDataMap.put(&quot;daysOfWeek&quot;, daysOfWeekString);</span>
+<span class="nc" id="L46">		templateDataMap.put(&quot;startTime&quot;, startTimeString);</span>
+<span class="nc" id="L47">		templateDataMap.put(&quot;endTime&quot;, endTimeString);</span>
+<span class="nc" id="L48">		templateName = &quot;newOpenings.ftl&quot;;</span>
+
+		// Go
+<span class="nc" id="L51">		trySendResponse();</span>
+<span class="nc" id="L52">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

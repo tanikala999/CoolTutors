@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MemberMemoryDAO.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">teachersFirst</a> &gt; <a href="index.source.html" class="el_package">edu.lwtech.csd297.teachersfirst.daos</a> &gt; <span class="el_source">MemberMemoryDAO.java</span></div><h1>MemberMemoryDAO.java</h1><pre class="source lang-java linenums">package edu.lwtech.csd297.teachersfirst.daos;
+
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.apache.logging.log4j.*;
+
+import edu.lwtech.csd297.teachersfirst.DateHelpers;
+import edu.lwtech.csd297.teachersfirst.pojos.*;
+
+// Memory-based DAO class - stores objects in a List.  No persistance.
+
+public class MemberMemoryDAO implements DAO&lt;Member&gt; {
+
+<span class="fc" id="L15">	private static final Logger logger = LogManager.getLogger(MemberMemoryDAO.class.getName());</span>
+
+	private AtomicInteger nextListRecID;
+	private List&lt;Member&gt; memberDB;
+
+	// ----------------------------------------------------------------
+
+<span class="fc" id="L22">	public MemberMemoryDAO() {</span>
+<span class="fc" id="L23">		this.nextListRecID = new AtomicInteger(1000);</span>
+<span class="fc" id="L24">		this.memberDB = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L25">	}</span>
+
+	// ----------------------------------------------------------------
+
+	public boolean initialize(String initParams) {
+<span class="fc bfc" id="L30" title="All 2 branches covered.">		if (initParams == null)</span>
+<span class="fc" id="L31">			throw new IllegalArgumentException(&quot;init: initParams cannot be null&quot;);</span>
+<span class="fc" id="L32">		logger.debug(&quot;Initializing MemoryDAO with: '{}'&quot;, initParams);</span>
+
+<span class="fc" id="L34">		addDemoData();</span>
+<span class="fc" id="L35">		return true;</span>
+	}
+
+	public void terminate() {
+<span class="fc" id="L39">		logger.debug(&quot;Terminating MemoryDAO...&quot;);</span>
+<span class="fc" id="L40">		memberDB = null;</span>
+<span class="fc" id="L41">	}</span>
+
+	public int insert(Member pojo) {
+<span class="fc bfc" id="L44" title="All 2 branches covered.">		if (pojo == null)</span>
+<span class="fc" id="L45">			throw new IllegalArgumentException(&quot;insert: cannot insert null object&quot;);</span>
+<span class="fc bfc" id="L46" title="All 2 branches covered.">		if (pojo.getRecID() != -1)</span>
+<span class="fc" id="L47">			throw new IllegalArgumentException(&quot;insert: object is already in database (recID != -1)&quot;);</span>
+<span class="fc" id="L48">		logger.debug(&quot;Inserting &quot; + pojo + &quot;...&quot;);</span>
+
+<span class="fc" id="L50">		pojo.setRecID(nextListRecID.incrementAndGet());</span>
+<span class="fc" id="L51">		memberDB.add(pojo);</span>
+
+<span class="fc" id="L53">		logger.debug(&quot;Item successfully inserted!&quot;);</span>
+<span class="fc" id="L54">		return pojo.getRecID();</span>
+	}
+
+	public Member retrieveByID(int id) {
+<span class="fc bfc" id="L58" title="All 2 branches covered.">		if (id &lt; 0)</span>
+<span class="fc" id="L59">			throw new IllegalArgumentException(&quot;retrieveByID: id cannot be negative&quot;);</span>
+<span class="fc" id="L60">		logger.debug(&quot;Getting object with ID: {} ...&quot;, id);</span>
+
+<span class="fc" id="L62">		Member foundObject = null;</span>
+<span class="fc bfc" id="L63" title="All 2 branches covered.">		for (Member pojo : memberDB) {</span>
+<span class="fc bfc" id="L64" title="All 2 branches covered.">			if (pojo.getRecID() == id) {</span>
+<span class="fc" id="L65">				foundObject = pojo;</span>
+<span class="fc" id="L66">				break;</span>
+			}
+<span class="fc" id="L68">		}</span>
+<span class="fc" id="L69">		return foundObject;</span>
+	}
+
+	public Member retrieveByIndex(int index) {
+<span class="fc bfc" id="L73" title="All 2 branches covered.">		if (index &lt; 0)</span>
+<span class="fc" id="L74">			throw new IllegalArgumentException(&quot;retrieveByIndex: index cannot be negative&quot;);</span>
+<span class="fc" id="L75">		logger.debug(&quot;Getting object with index: {} ...&quot;, index);</span>
+
+<span class="fc" id="L77">		return memberDB.get(index);</span>
+	}
+
+	public List&lt;Member&gt; retrieveAll() {
+<span class="fc" id="L81">		logger.debug(&quot;Getting all POJOs ...&quot;);</span>
+<span class="fc" id="L82">		return new ArrayList&lt;&gt;(memberDB); // Return copy of DB collection</span>
+	}
+
+	public List&lt;Integer&gt; retrieveAllIDs() {
+<span class="fc" id="L86">		logger.debug(&quot;Getting all IDs...&quot;);</span>
+
+<span class="fc" id="L88">		List&lt;Integer&gt; listIDs = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L89" title="All 2 branches covered.">		for (Member pojo : memberDB) {</span>
+<span class="fc" id="L90">			listIDs.add(pojo.getRecID());</span>
+<span class="fc" id="L91">		}</span>
+<span class="fc" id="L92">		return listIDs;</span>
+	}
+
+	public List&lt;Member&gt; search(String keyword) {
+<span class="fc bfc" id="L96" title="All 2 branches covered.">		if (keyword == null)</span>
+<span class="fc" id="L97">			throw new IllegalArgumentException(&quot;search: keyword cannot be null&quot;);</span>
+<span class="fc" id="L98">		logger.debug(&quot;Searching for objects containing: '{}'&quot;, keyword);</span>
+
+<span class="fc" id="L100">		keyword = keyword.toLowerCase();</span>
+<span class="fc" id="L101">		List&lt;Member&gt; pojosFound = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L102" title="All 2 branches covered.">		for (Member pojo : memberDB) {</span>
+<span class="fc bfc" id="L103" title="All 2 branches covered.">			if (pojo.getName().toLowerCase().contains(keyword)) {</span>
+<span class="fc" id="L104">				pojosFound.add(pojo);</span>
+<span class="fc" id="L105">				break;</span>
+			}
+<span class="fc" id="L107">		}</span>
+		//logger.debug(&quot;Found {} objects with the keyword '{}'!&quot;, pojosFound.size(), keyword);
+<span class="fc" id="L109">		return pojosFound;</span>
+	}
+
+	public int size() {
+<span class="fc" id="L113">		return memberDB.size();</span>
+	}
+
+	public boolean update(Member pojo) {
+<span class="fc bfc" id="L117" title="All 2 branches covered.">		if (pojo == null)</span>
+<span class="fc" id="L118">			throw new IllegalArgumentException(&quot;update: cannot update null object&quot;);</span>
+<span class="fc" id="L119">		logger.debug(&quot;Trying to update object with ID: {} ...&quot;, pojo.getRecID());</span>
+
+<span class="fc bfc" id="L121" title="All 2 branches covered.">		for (int i = 0; i &lt; memberDB.size(); i++) {</span>
+<span class="fc bfc" id="L122" title="All 2 branches covered.">			if (memberDB.get(i).getRecID() == pojo.getRecID()) {</span>
+<span class="fc" id="L123">				memberDB.set(i, pojo);</span>
+<span class="fc" id="L124">				logger.debug(&quot;Successfully updated: {} !&quot;, pojo.getRecID());</span>
+<span class="fc" id="L125">				return true;</span>
+			}
+		}
+<span class="fc" id="L128">		logger.debug(&quot;Unable to update object: {}.  RecID not found.&quot;, pojo.getRecID());</span>
+<span class="fc" id="L129">		return false;</span>
+	}
+
+	public void delete(int id) {
+<span class="fc bfc" id="L133" title="All 2 branches covered.">		if (id &lt; 0)</span>
+<span class="fc" id="L134">			throw new IllegalArgumentException(&quot;delete: id cannot be negative&quot;);</span>
+<span class="fc" id="L135">		logger.debug(&quot;Trying to delete object with ID: {} ...&quot;, id);</span>
+
+<span class="fc" id="L137">		Member pojoFound = null;</span>
+<span class="fc bfc" id="L138" title="All 2 branches covered.">		for (Member pojo : memberDB) {</span>
+<span class="fc bfc" id="L139" title="All 2 branches covered.">			if (pojo.getRecID() == id) {</span>
+<span class="fc" id="L140">				pojoFound = pojo;</span>
+<span class="fc" id="L141">				break;</span>
+			}
+<span class="fc" id="L143">		}</span>
+<span class="fc bfc" id="L144" title="All 2 branches covered.">		if (pojoFound != null) {</span>
+<span class="fc" id="L145">			memberDB.remove(pojoFound);</span>
+<span class="fc" id="L146">			logger.debug(&quot;Successfully deleted object with ID: {}&quot;, id);</span>
+		} else {
+<span class="fc" id="L148">			logger.debug(&quot;Unable to delete object with ID: {}. List not found.&quot;, id);</span>
+		}
+<span class="fc" id="L150">	}</span>
+
+	// =================================================================
+
+	private void addDemoData() {
+<span class="fc" id="L155">		logger.debug(&quot;Creating demo data...&quot;);</span>
+
+<span class="fc" id="L157">		insert(new Member(&quot;debug&quot;, &quot;Password01&quot;, &quot;Null User&quot;, DateHelpers.toTimestamp(&quot;1950/05/05 00:00:00&quot;), &quot;f&quot;, &quot;&quot;, &quot;111-111-1111&quot;, &quot;&quot;, &quot;debug@lwtech.edu&quot;, false, false, false));</span>
+<span class="fc" id="L158">		insert(new Member(&quot;darren&quot;, &quot;Password01&quot;, &quot;Darren S.&quot;, DateHelpers.toTimestamp(&quot;1960/06/06 00:00:00&quot;), &quot;m&quot;, &quot;&quot;, &quot;222-111-1111&quot;, &quot;&quot;, &quot;darren@lwtech.edu&quot;, false, true, true));</span>
+<span class="fc" id="L159">		insert(new Member(&quot;tanya&quot;, &quot;Password01&quot;, &quot;Tanya F.&quot;, DateHelpers.toTimestamp(&quot;1970/07/07 00:00:00&quot;), &quot;f&quot;, &quot;&quot;, &quot;333-111-1111&quot;, &quot;&quot;, &quot;tanya@lwtech.edu&quot;, false, true, false));</span>
+<span class="fc" id="L160">		insert(new Member(&quot;edmund&quot;, &quot;Password01&quot;, &quot;Edmund P.&quot;, DateHelpers.toTimestamp(&quot;1980/08/08 00:00:00&quot;), &quot;m&quot;, &quot;&quot;, &quot;444-111-1111&quot;, &quot;&quot;, &quot;edmund@lwtech.edu&quot;, false, true, false));</span>
+<span class="fc" id="L161">		insert(new Member(&quot;fred&quot;, &quot;Password01&quot;, &quot;Fred A.&quot;, DateHelpers.toTimestamp(&quot;1990/09/09 00:00:00&quot;), &quot;m&quot;, &quot;&quot;, &quot;555-111-1111&quot;, &quot;&quot;, &quot;fred@lwtech.edu&quot;, true, true, false));</span>
+<span class="fc" id="L162">		insert(new Member(&quot;susan&quot;, &quot;Password01&quot;, &quot;Susan I.&quot;, DateHelpers.toTimestamp(&quot;2000/10/10 00:00:00&quot;), &quot;f&quot;, &quot;&quot;, &quot;666-111-1111&quot;, &quot;&quot;, &quot;susan@lwtech.edu&quot;, false, false, true));</span>
+<span class="fc" id="L163">		insert(new Member(&quot;ben&quot;, &quot;Password01&quot;, &quot;Ben S.&quot;, &quot;m&quot;, &quot;&quot;, &quot;777-111-1111&quot;, &quot;&quot;, &quot;ben@lwtech.edu&quot;, true, false, false));</span>
+<span class="fc" id="L164">		insert(new Member(&quot;betty&quot;, &quot;Password01&quot;, &quot;Betty S.&quot;, &quot;f&quot;, &quot;&quot;, &quot;888-111-1111&quot;, &quot;&quot;, &quot;betty@lwtech.edu&quot;, true, false, false));</span>
+
+<span class="fc" id="L166">		logger.info(size() + &quot; records inserted&quot;);</span>
+<span class="fc" id="L167">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DeleteOpeningAction.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">teachersFirst</a> &gt; <a href="index.source.html" class="el_package">edu.lwtech.csd297.teachersfirst.actions</a> &gt; <span class="el_source">DeleteOpeningAction.java</span></div><h1>DeleteOpeningAction.java</h1><pre class="source lang-java linenums">package edu.lwtech.csd297.teachersfirst.actions;
+
+import javax.servlet.http.*;
+
+import edu.lwtech.csd297.teachersfirst.*;
+import edu.lwtech.csd297.teachersfirst.pojos.*;
+
+public class DeleteOpeningAction extends ActionRunner {
+
+<span class="nc" id="L10">	public DeleteOpeningAction(HttpServletRequest request, HttpServletResponse response) { super(request, response); }</span>
+
+	@Override
+	public void RunAction() {
+
+		// This should not be possible for anyone not logged in.
+<span class="nc bnc" id="L16" title="All 2 branches missed.">		if (uid &lt;= 0) {</span>
+<span class="nc" id="L17">			this.SendPostReply(&quot;/openings&quot;, &quot;&quot;, &quot;Please sign in or register to use this feature!&quot;);</span>
+<span class="nc" id="L18">			return;</span>
+		}
+
+<span class="nc" id="L21">		final String openingIdString = QueryHelpers.getPost(request, &quot;openingId&quot;);</span>
+		int openingIdInt;
+		try {
+<span class="nc" id="L24">			openingIdInt = Integer.parseInt(openingIdString);</span>
+<span class="nc" id="L25">		} catch (NumberFormatException e) {</span>
+<span class="nc" id="L26">			openingIdInt = 0;</span>
+<span class="nc" id="L27">		}</span>
+<span class="nc" id="L28">		final Opening opening = DataManager.getOpeningDAO().retrieveByID(openingIdInt);</span>
+<span class="nc bnc" id="L29" title="All 2 branches missed.">		if (opening == null) {</span>
+<span class="nc" id="L30">			this.SendPostReply(&quot;/openings&quot;, &quot;&quot;, &quot;Opening %5B&quot; + openingIdString + &quot;%5D not found!&quot;);</span>
+<span class="nc" id="L31">			return;</span>
+		}
+
+		// Make sure the person has the authority
+<span class="nc bnc" id="L35" title="All 4 branches missed.">		if (!isAdmin &amp;&amp; opening.getInstructorID() != uid) {</span>
+<span class="nc" id="L36">			this.SendPostReply(&quot;/openings&quot;, &quot;&quot;, &quot;Not your opening, cannot delete.&quot;);</span>
+<span class="nc" id="L37">			return;</span>
+		}
+
+<span class="nc" id="L40">		logger.debug(&quot;Attempting to delete opening &quot; + opening.toString() + &quot; ...&quot;);</span>
+		
+<span class="nc" id="L42">		DataManager.getOpeningDAO().delete(openingIdInt);</span>
+		//logger.info(DataManager.getOpeningDAO().size() + &quot; records total&quot;);
+<span class="nc" id="L44">		logger.debug(&quot;Deleted opening ID: [{}]&quot;, openingIdInt);</span>
+		
+<span class="nc" id="L46">		this.SendPostReply(&quot;/openings&quot;, &quot;&quot;, &quot;Opening %5B&quot; + openingIdString + &quot;%5D deleted!&quot;);</span>
+<span class="nc" id="L47">		return;</span>
+	}
+	
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: edu.lwtech.csd297.teachersfirst.SecurityTests
+-------------------------------------------------------------------------------
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 5.175 s - in edu.lwtech.csd297.teachersfirst.SecurityTests

@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DataManager.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">teachersFirst</a> &gt; <a href="index.source.html" class="el_package">edu.lwtech.csd297.teachersfirst</a> &gt; <span class="el_source">DataManager.java</span></div><h1>DataManager.java</h1><pre class="source lang-java linenums">package edu.lwtech.csd297.teachersfirst;
+
+import java.util.*;
+
+import javax.servlet.*;
+
+import edu.lwtech.csd297.teachersfirst.daos.*;
+import edu.lwtech.csd297.teachersfirst.pojos.*;
+
+<span class="nc" id="L10">public class DataManager {</span>
+	
+<span class="fc" id="L12">	public static String primaryHighlightAdmin = &quot;#96bbff&quot;;</span>
+<span class="fc" id="L13">	public static String primaryHighlightDarkAdmin = &quot;#7da9fa&quot;;</span>
+<span class="fc" id="L14">	public static String backgroundColorAdmin = &quot;#c6d9ff&quot;;</span>
+<span class="fc" id="L15">	public static String backgroundColorLightAdmin = &quot;#dde5ff&quot;;</span>
+
+<span class="fc" id="L17">	public static String primaryHighlightInstructor = &quot;#bbff96&quot;;</span>
+<span class="fc" id="L18">	public static String primaryHighlightDarkInstructor = &quot;#a9fa7d&quot;;</span>
+<span class="fc" id="L19">	public static String backgroundColorInstructor = &quot;#d9ffc6&quot;;</span>
+<span class="fc" id="L20">	public static String backgroundColorLightInstructor = &quot;#e5ffdd&quot;;</span>
+
+<span class="fc" id="L22">	public static String primaryHighlightGeneral = &quot;#ffbb96&quot;;</span>
+<span class="fc" id="L23">	public static String primaryHighlightDarkGeneral = &quot;#faa97d&quot;;</span>
+<span class="fc" id="L24">	public static String backgroundColorGeneral = &quot;#ffd9c6&quot;;</span>
+<span class="fc" id="L25">	public static String backgroundColorLightGeneral = &quot;#ffe5dd&quot;;</span>
+
+<span class="fc" id="L27">	public static String websiteTitle = &quot;CoolTutors.org&quot;;</span>
+<span class="fc" id="L28">	public static String websiteSubtitle = &quot;The coolest tutors on the web!&quot;;</span>
+
+<span class="fc" id="L30">	public static final List&lt;DAO&lt;?&gt;&gt; allDAOs = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L31">	private static DAO&lt;Member&gt; memberDAO = null;</span>
+<span class="fc" id="L32">	private static DAO&lt;Service&gt; serviceDAO = null;</span>
+<span class="fc" id="L33">	private static DAO&lt;Appointment&gt; appointmentDAO = null;</span>
+<span class="fc" id="L34">	private static DAO&lt;Opening&gt; openingDAO = null;</span>
+
+	// Meta constructors and destructors
+
+	public static void initializeDAOs() throws ServletException {
+
+<span class="fc" id="L40">		String initParams = &quot;jdbc:mariadb://lwtech-csd297.cv18zcsjzteu.us-west-2.rds.amazonaws.com:3306/mercer&quot;;</span>
+<span class="fc" id="L41">        initParams += &quot;?useSSL=false&amp;allowPublicKeyRetrieval=true&quot;;</span>
+<span class="fc" id="L42">        initParams += &quot;&amp;user=mercer&amp;password=mercer-rox&quot;;    </span>
+
+<span class="fc" id="L44">		DataManager.memberDAO = new MemberSqlDAO();</span>
+<span class="pc bpc" id="L45" title="1 of 2 branches missed.">		if (!DataManager.memberDAO.initialize(initParams)) throw new UnavailableException(&quot;Unable to initialize the memberDAO.&quot;);</span>
+<span class="fc" id="L46">		DataManager.allDAOs.add(DataManager.memberDAO);</span>
+
+<span class="fc" id="L48">		DataManager.serviceDAO = new ServiceMemoryDAO();</span>
+<span class="pc bpc" id="L49" title="1 of 2 branches missed.">		if (!DataManager.serviceDAO.initialize(&quot;&quot;)) throw new UnavailableException(&quot;Unable to initialize the serviceDAO.&quot;);</span>
+<span class="fc" id="L50">		DataManager.allDAOs.add(DataManager.serviceDAO);</span>
+
+<span class="fc" id="L52">		DataManager.appointmentDAO = new AppointmentSqlDAO();</span>
+<span class="pc bpc" id="L53" title="1 of 2 branches missed.">		if (!DataManager.appointmentDAO.initialize(initParams)) throw new UnavailableException(&quot;Unable to initialize the appointmentDAO.&quot;);</span>
+<span class="fc" id="L54">		DataManager.allDAOs.add(DataManager.appointmentDAO);</span>
+
+<span class="fc" id="L56">		DataManager.openingDAO = new OpeningSqlDAO();</span>
+<span class="pc bpc" id="L57" title="1 of 2 branches missed.">		if (!DataManager.openingDAO.initialize(initParams)) throw new UnavailableException(&quot;Unable to initialize the openingDAO.&quot;);</span>
+<span class="fc" id="L58">		DataManager.allDAOs.add(DataManager.openingDAO);</span>
+
+<span class="fc" id="L60">	}</span>
+
+	public static void terminateDAOs() {
+		// memberDAO.terminate();
+<span class="fc bfc" id="L64" title="All 2 branches covered.">		for (DAO&lt;?&gt; iDAO : DataManager.allDAOs) {</span>
+<span class="fc" id="L65">			iDAO.terminate();</span>
+<span class="fc" id="L66">		}</span>
+<span class="fc" id="L67">	}</span>
+
+	public static void resetDAOs() {
+<span class="fc" id="L70">		int i = 0;</span>
+<span class="fc bfc" id="L71" title="All 2 branches covered.">		for (DAO&lt;?&gt; iDAO : DataManager.allDAOs) {</span>
+			try {
+<span class="fc" id="L73">				iDAO.terminate();</span>
+<span class="fc" id="L74">			} catch (NullPointerException ex) {</span>
+<span class="fc" id="L75">				System.out.println(&quot;==========================================&quot;);</span>
+<span class="fc" id="L76">				System.out.println(&quot;| DAO #&quot; + i + &quot; COULD NOT GRACEFULLY TERMINATE! |&quot;);</span>
+<span class="fc" id="L77">				System.out.println(&quot;==========================================&quot;);</span>
+<span class="fc" id="L78">			}</span>
+<span class="fc" id="L79">			i++;</span>
+<span class="fc" id="L80">		}</span>
+<span class="fc" id="L81">		DataManager.allDAOs.clear();</span>
+		try {
+<span class="fc" id="L83">			DataManager.initializeDAOs();</span>
+<span class="nc" id="L84">		} catch (ServletException ex) {</span>
+<span class="nc" id="L85">			System.out.println(&quot;====================================&quot;);</span>
+<span class="nc" id="L86">			System.out.println(&quot;| SQL CONNECTION ERROR PLEASE FIX! |&quot;);</span>
+<span class="nc" id="L87">			System.out.println(&quot;====================================&quot;);</span>
+<span class="fc" id="L88">		}</span>
+<span class="fc" id="L89">	}</span>
+
+	// methods
+
+	public static DAO&lt;Member&gt; getMemberDAO() {
+<span class="fc" id="L94">		return DataManager.memberDAO;</span>
+	}
+
+	public static DAO&lt;Service&gt; getServiceDAO() {
+<span class="fc" id="L98">		return DataManager.serviceDAO;</span>
+	}
+
+	public static DAO&lt;Appointment&gt; getAppointmentDAO() {
+<span class="fc" id="L102">		return DataManager.appointmentDAO;</span>
+	}
+
+	public static DAO&lt;Opening&gt; getOpeningDAO() {
+<span class="fc" id="L106">		return DataManager.openingDAO;</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

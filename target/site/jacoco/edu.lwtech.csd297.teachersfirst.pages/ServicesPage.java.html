@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ServicesPage.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">teachersFirst</a> &gt; <a href="index.source.html" class="el_package">edu.lwtech.csd297.teachersfirst.pages</a> &gt; <span class="el_source">ServicesPage.java</span></div><h1>ServicesPage.java</h1><pre class="source lang-java linenums">package edu.lwtech.csd297.teachersfirst.pages;
+
+import java.util.*;
+import javax.servlet.http.*;
+
+import edu.lwtech.csd297.teachersfirst.*;
+import edu.lwtech.csd297.teachersfirst.pojos.*;
+
+public class ServicesPage extends PageLoader {
+
+	// Notes for making classes that FreeMarker can actually read:
+	//  - class must be public
+	//  - class variables must be private
+	//  - class variables must have appropriate getters
+
+	// Constructor
+<span class="nc" id="L17">	public ServicesPage(HttpServletRequest request, HttpServletResponse response) { super(request, response); }</span>
+<span class="nc" id="L18">		boolean jsonMode = QueryHelpers.getGetBool(request, &quot;json&quot;);</span>
+
+	// Page-specific
+
+	@Override
+	public void loadPage() {
+<span class="nc" id="L24">		templateDataMap.put(&quot;title&quot;, &quot;Services&quot;);</span>
+		
+		// Get Data from DAO
+<span class="nc" id="L27">		final List&lt;Service&gt; services = DataManager.getServiceDAO().retrieveAll();</span>
+<span class="nc" id="L28">		boolean jsonMode = QueryHelpers.getGetBool(request, &quot;json&quot;);</span>
+
+		// FreeMarker
+<span class="nc" id="L31">		templateName = &quot;services.ftl&quot;;</span>
+<span class="nc" id="L32">		templateDataMap.put(&quot;services&quot;, services);</span>
+
+		// Go
+<span class="nc bnc" id="L35" title="All 2 branches missed.">		if (jsonMode) {</span>
+<span class="nc" id="L36">			String json = JsonUtils.BuildArrays(services);</span>
+			//logger.debug(&quot;Json: &quot; + json);
+<span class="nc" id="L38">			trySendJson(json);</span>
+<span class="nc" id="L39">		} else {</span>
+<span class="nc" id="L40">			trySendResponse();</span>
+		}
+<span class="nc" id="L42">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

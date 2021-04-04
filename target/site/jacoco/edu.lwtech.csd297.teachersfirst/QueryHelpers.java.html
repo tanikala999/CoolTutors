@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>QueryHelpers.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">teachersFirst</a> &gt; <a href="index.source.html" class="el_package">edu.lwtech.csd297.teachersfirst</a> &gt; <span class="el_source">QueryHelpers.java</span></div><h1>QueryHelpers.java</h1><pre class="source lang-java linenums">package edu.lwtech.csd297.teachersfirst;
+
+import java.io.*;
+import java.net.*;
+
+import javax.servlet.http.*;
+
+<span class="nc" id="L8">public class QueryHelpers {</span>
+	
+	public static String getSanitizedFullQueryString(HttpServletRequest request) {
+<span class="nc" id="L11">		String queryString = request.getQueryString();</span>
+<span class="nc bnc" id="L12" title="All 2 branches missed.">		if (queryString == null)</span>
+<span class="nc" id="L13">			return &quot;&quot;;</span>
+
+		try {
+<span class="nc" id="L16">			queryString = URLDecoder.decode(queryString, &quot;UTF-8&quot;);</span>
+<span class="nc" id="L17">		} catch (UnsupportedEncodingException e) {</span>
+			// Should never happen
+<span class="nc" id="L19">			throw new IllegalStateException(e);</span>
+<span class="nc" id="L20">		}</span>
+<span class="nc" id="L21">		queryString = sanitizeForLog(queryString);</span>
+<span class="nc" id="L22">		return queryString;</span>
+	}
+
+	public static String sanitizeForLog(String s) {
+<span class="fc" id="L26">		return s.replaceAll(&quot;[\n|\t]&quot;, &quot;_&quot;).trim();</span>
+	}
+
+	public static String sanitizeForWeb(String s) {
+<span class="pc bpc" id="L30" title="1 of 2 branches missed.">		if (s == null) return &quot;&quot;;</span>
+		try {
+<span class="fc" id="L32">			s = URLDecoder.decode(s, &quot;UTF-8&quot;);</span>
+<span class="nc" id="L33">		} catch (UnsupportedEncodingException e) {</span>
+<span class="nc" id="L34">			throw new IllegalStateException(e);</span>
+<span class="fc" id="L35">		} catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L36">			throw new IllegalArgumentException(e);</span>
+<span class="fc" id="L37">		}</span>
+		// This might be redundant with URLDecoder, but just to be safe...
+<span class="fc" id="L39">		s = s.replaceAll(&quot;&lt;&quot;, &quot;&amp;lt;&quot;);</span>
+<span class="fc" id="L40">		s = s.replaceAll(&quot;&gt;&quot;, &quot;&amp;gt;&quot;);</span>
+<span class="fc" id="L41">		s = s.replaceAll(&quot;\&quot;&quot;, &quot;&amp;quot;&quot;);</span>
+<span class="fc" id="L42">		s = s.replaceAll(&quot;&amp;&quot;, &quot;&amp;amp;&quot;);</span>
+<span class="fc" id="L43">		return s.trim();</span>
+	}
+
+	public static String getGet(HttpServletRequest request, String keyName) {
+<span class="nc" id="L47">		return getGet(request, keyName, &quot;&quot;);</span>
+	}
+
+	public static String getPost(HttpServletRequest request, String keyName) {
+<span class="nc" id="L51">		return getPost(request, keyName, &quot;&quot;);</span>
+	}
+
+	public static String getPost(HttpServletRequest request, String keyName, String defaultValue) {
+<span class="nc" id="L55">		return getGet(request, keyName, defaultValue);</span>
+	}
+
+	public static boolean getGetBool(HttpServletRequest request, String keyName) {
+<span class="nc bnc" id="L59" title="All 2 branches missed.">		if (request.getParameter(keyName) == null) return false; // /appointments =&gt; should return false</span>
+<span class="nc bnc" id="L60" title="All 2 branches missed.">		if (request.getParameter(keyName).isEmpty()) return true; // /appointments?json =&gt; should return true</span>
+<span class="nc bnc" id="L61" title="All 2 branches missed.">		if (request.getParameter(keyName).toString().equals(&quot;0&quot;)) return false; // /appointments?json=0 =&gt; should return false</span>
+<span class="nc bnc" id="L62" title="All 2 branches missed.">		if (request.getParameter(keyName).toString().toLowerCase().equals(&quot;false&quot;)) return false; // /appointments?json=FALSE =&gt; should return false</span>
+<span class="nc" id="L63">		return true; // anything else should return true</span>
+	}
+
+	public static String getGet(HttpServletRequest request, String keyName, String defaultValue) {
+<span class="nc bnc" id="L67" title="All 2 branches missed.">		if (request.getParameter(keyName) == null) return defaultValue;</span>
+<span class="nc bnc" id="L68" title="All 2 branches missed.">		if (request.getParameter(keyName).isEmpty()) return defaultValue;</span>
+<span class="nc" id="L69">		return sanitizeForWeb(request.getParameter(keyName));</span>
+	}
+
+	public static String getSessionValue(HttpServletRequest request, String sessionArg) {
+<span class="nc" id="L73">		return getSessionValue(request, sessionArg, &quot;&quot;);</span>
+	}
+
+	public static String getSessionValue(HttpServletRequest request, String sessionArg, String defaultValue) {
+<span class="nc bnc" id="L77" title="All 2 branches missed.">		if (request.getSession().getAttribute(sessionArg) == null) return defaultValue;</span>
+<span class="nc bnc" id="L78" title="All 2 branches missed.">		if (request.getSession().getAttribute(sessionArg).toString() == null) return defaultValue;</span>
+<span class="nc bnc" id="L79" title="All 2 branches missed.">		if (request.getSession().getAttribute(sessionArg).toString().isEmpty()) return defaultValue;</span>
+<span class="nc" id="L80">		return request.getSession().getAttribute(sessionArg).toString();</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

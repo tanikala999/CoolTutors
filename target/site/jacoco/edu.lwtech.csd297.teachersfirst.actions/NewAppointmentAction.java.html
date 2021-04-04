@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>NewAppointmentAction.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">teachersFirst</a> &gt; <a href="index.source.html" class="el_package">edu.lwtech.csd297.teachersfirst.actions</a> &gt; <span class="el_source">NewAppointmentAction.java</span></div><h1>NewAppointmentAction.java</h1><pre class="source lang-java linenums">package edu.lwtech.csd297.teachersfirst.actions;
+
+import java.sql.Timestamp;
+import java.time.*;
+import java.util.*;
+
+import javax.servlet.http.*;
+
+import edu.lwtech.csd297.teachersfirst.*;
+import edu.lwtech.csd297.teachersfirst.daos.*;
+import edu.lwtech.csd297.teachersfirst.pojos.*;
+
+public class NewAppointmentAction extends ActionRunner {
+
+<span class="nc" id="L15">	public NewAppointmentAction(HttpServletRequest request, HttpServletResponse response) { super(request, response); }</span>
+
+	@Override
+	public void RunAction() {
+
+		// This should not be possible for anyone not logged in.
+<span class="nc bnc" id="L21" title="All 2 branches missed.">		if (uid &lt;= 0) {</span>
+<span class="nc" id="L22">			this.SendPostReply(&quot;/services&quot;, &quot;&quot;, &quot;Please sign in or register to use this feature!&quot;);</span>
+<span class="nc" id="L23">			return;</span>
+		}
+
+<span class="nc" id="L26">		final String openingIdString = QueryHelpers.getPost(request, &quot;openingId&quot;);</span>
+		int openingIdInt;
+		try {
+<span class="nc" id="L29">			openingIdInt = Integer.parseInt(openingIdString);</span>
+<span class="nc" id="L30">		} catch (NumberFormatException e) {</span>
+<span class="nc" id="L31">			openingIdInt = 0;</span>
+<span class="nc" id="L32">		}</span>
+<span class="nc" id="L33">		final Opening referralOpening = DataManager.getOpeningDAO().retrieveByID(openingIdInt);</span>
+<span class="nc bnc" id="L34" title="All 2 branches missed.">		if (referralOpening == null) {</span>
+<span class="nc" id="L35">			this.SendPostReply(&quot;/openings&quot;, &quot;&quot;, &quot;Opening with ID %5B&quot; + openingIdString + &quot;%5D does not exist!&quot;);</span>
+<span class="nc" id="L36">			return;</span>
+		}
+
+<span class="nc" id="L39">		final String studentIdString = QueryHelpers.getPost(request, &quot;studentId&quot;);</span>
+		int studentIdInt;
+		try {
+<span class="nc" id="L42">			studentIdInt = Integer.parseInt(studentIdString);</span>
+<span class="nc" id="L43">		} catch (NumberFormatException e) {</span>
+<span class="nc" id="L44">			studentIdInt = 0;</span>
+<span class="nc" id="L45">		}</span>
+<span class="nc bnc" id="L46" title="All 2 branches missed.">		if (DataManager.getMemberDAO().retrieveByID(studentIdInt) == null) {</span>
+<span class="nc" id="L47">			this.SendPostReply(&quot;/openings&quot;, &quot;&quot;, &quot;Student with ID %5B&quot; + studentIdString + &quot;%5D does not exist!&quot;);</span>
+<span class="nc" id="L48">			return;</span>
+		}
+<span class="nc" id="L50">		final String instructorIdString = QueryHelpers.getPost(request, &quot;instructorId&quot;);</span>
+		int instructorIdInt;
+		try {
+<span class="nc" id="L53">			instructorIdInt = Integer.parseInt(instructorIdString);</span>
+<span class="nc" id="L54">		} catch (NumberFormatException e) {</span>
+<span class="nc" id="L55">			instructorIdInt = 0;</span>
+<span class="nc" id="L56">		}</span>
+
+<span class="nc bnc" id="L58" title="All 2 branches missed.">		if (DataManager.getMemberDAO().retrieveByID(instructorIdInt) == null) {</span>
+<span class="nc" id="L59">			this.SendPostReply(&quot;/openings&quot;, &quot;&quot;, &quot;Instructor with ID %5B&quot; + instructorIdString + &quot;%5D does not exist!&quot;);</span>
+<span class="nc" id="L60">			return;</span>
+<span class="nc bnc" id="L61" title="All 2 branches missed.">		} else if (studentIdInt == instructorIdInt) {</span>
+<span class="nc" id="L62">			this.SendPostReply(&quot;/openings&quot;, &quot;&quot;, &quot;Student ID and Instructor ID both &quot; + studentIdString + &quot; -- appointments can not be made with self.&quot;);</span>
+<span class="nc" id="L63">			return;</span>
+		}
+
+<span class="nc" id="L66">		final String dateString = QueryHelpers.getPost(request, &quot;date&quot;);</span>
+<span class="nc" id="L67">		final String startTimeString = QueryHelpers.getPost(request, &quot;appointmentStartTime&quot;);</span>
+<span class="nc" id="L68">		final String endTimeString = QueryHelpers.getPost(request, &quot;appointmentEndTime&quot;);</span>
+
+<span class="nc" id="L70">		int month = 1;</span>
+<span class="nc" id="L71">		int day = 1;</span>
+<span class="nc" id="L72">		int year = 1800;</span>
+		try {
+<span class="nc" id="L74">			final String[] dateInfo = dateString.split(&quot;/&quot;);</span>
+<span class="nc bnc" id="L75" title="All 2 branches missed.">			if (dateInfo.length != 3) throw new NumberFormatException();</span>
+<span class="nc" id="L76">			month = Integer.parseInt(dateInfo[0]);</span>
+<span class="nc" id="L77">			day = Integer.parseInt(dateInfo[1]);</span>
+<span class="nc" id="L78">			year = Integer.parseInt(dateInfo[2]);</span>
+<span class="nc" id="L79">		} catch (NumberFormatException e) {</span>
+<span class="nc" id="L80">			this.SendPostReply(&quot;/openings&quot;, &quot;&quot;, &quot;Could not parse date: %5B&quot; + dateString + &quot;%5D !&quot;);</span>
+<span class="nc" id="L81">			return;</span>
+<span class="nc" id="L82">		}</span>
+
+<span class="nc" id="L84">		int startHour = 0;</span>
+<span class="nc" id="L85">		int startMinute = 0;</span>
+		try {
+<span class="nc" id="L87">			final String[] timeInfo = startTimeString.split(&quot;:&quot;);</span>
+<span class="nc bnc" id="L88" title="All 2 branches missed.">			if (timeInfo.length != 2) throw new NumberFormatException();</span>
+<span class="nc" id="L89">			startHour = Integer.parseInt(timeInfo[0]);</span>
+<span class="nc" id="L90">			startMinute = Integer.parseInt(timeInfo[1]);</span>
+<span class="nc" id="L91">		} catch (NumberFormatException e) {</span>
+<span class="nc" id="L92">			this.SendPostReply(&quot;/openings&quot;, &quot;&quot;, &quot;Could not parse start time: %5B&quot; + startTimeString + &quot;%5D L:&quot; + startTimeString.split(&quot;:&quot;).length + &quot; !&quot;);</span>
+<span class="nc" id="L93">			return;</span>
+<span class="nc" id="L94">		}</span>
+
+<span class="nc bnc" id="L96" title="All 8 branches missed.">		if (startMinute != 0 &amp;&amp; startMinute != 15 &amp;&amp; startMinute != 30 &amp;&amp; startMinute != 45) {</span>
+<span class="nc" id="L97">			this.SendPostReply(&quot;/openings&quot;, &quot;&quot;, &quot;Start minute %5B&quot; + startMinute + &quot;%5D not allowed, must be multiple of 15!&quot;);</span>
+<span class="nc" id="L98">			return;</span>
+		}
+
+<span class="nc" id="L101">		int endHour = 0;</span>
+<span class="nc" id="L102">		int endMinute = 0;</span>
+		try {
+<span class="nc" id="L104">			final String[] timeInfo = endTimeString.split(&quot;:&quot;);</span>
+<span class="nc bnc" id="L105" title="All 2 branches missed.">			if (timeInfo.length != 2) throw new NumberFormatException();</span>
+<span class="nc" id="L106">			endHour = Integer.parseInt(timeInfo[0]);</span>
+<span class="nc" id="L107">			endMinute = Integer.parseInt(timeInfo[1]);</span>
+<span class="nc" id="L108">		} catch (NumberFormatException e) {</span>
+<span class="nc" id="L109">			this.SendPostReply(&quot;/openings&quot;, &quot;&quot;, &quot;Could not parse end time: %5B&quot; + endTimeString + &quot;%5D !&quot;);</span>
+<span class="nc" id="L110">			return;</span>
+<span class="nc" id="L111">		}</span>
+
+<span class="nc bnc" id="L113" title="All 8 branches missed.">		if (endMinute != 0 &amp;&amp; endMinute != 15 &amp;&amp; endMinute != 30 &amp;&amp; endMinute != 45) {</span>
+<span class="nc" id="L114">			this.SendPostReply(&quot;/openings&quot;, &quot;&quot;, &quot;End minute %5B&quot; + endMinute + &quot;%5D not allowed, must be multiple of 15!&quot;);</span>
+<span class="nc" id="L115">			return;</span>
+		}
+
+<span class="nc" id="L118">		int endDay = day;</span>
+<span class="nc" id="L119">		int startTime = startHour * 60 + startMinute;</span>
+<span class="nc" id="L120">		int endTime = endHour * 60 + endMinute;</span>
+<span class="nc bnc" id="L121" title="All 2 branches missed.">		if (endTime &lt; startTime) {</span>
+<span class="nc" id="L122">			endTime += 1440;</span>
+<span class="nc" id="L123">			endDay++;</span>
+		}
+<span class="nc bnc" id="L125" title="All 4 branches missed.">		if (startTime &gt; 1440 || endTime &gt; 1440) {</span>
+<span class="nc" id="L126">			this.SendPostReply(&quot;/openings&quot;, &quot;&quot;, &quot;Invalid start time or end time. Start Time: %5B&quot; + startTime + &quot;%5D End Time: %5B&quot; + endTime + &quot;%5D&quot;);</span>
+<span class="nc" id="L127">			return;</span>
+		}
+<span class="nc bnc" id="L129" title="All 2 branches missed.">		if (endTime - 720 &gt; startTime) {</span>
+<span class="nc" id="L130">			this.SendPostReply(&quot;/openings&quot;, &quot;&quot;, &quot;Appointments must not be longer than 12 hours! Start Time: %5B&quot; + startTime + &quot;%5D End Time: %5B&quot; + endTime + &quot;%5D&quot;);</span>
+<span class="nc" id="L131">			return;</span>
+		}
+
+<span class="nc" id="L134">		LocalDateTime startTimeLdt = LocalDateTime.of(year, month, day, startHour, startMinute, 0);</span>
+<span class="nc" id="L135">		LocalDateTime endTimeLdt = LocalDateTime.of(year, month, day, endHour, endMinute, 0);</span>
+
+		// Make sure within scope of openings
+<span class="nc bnc" id="L138" title="All 2 branches missed.">		if (!DateHelpers.timeIsBetweenTimeAndTime(</span>
+				startTimeLdt,
+<span class="nc" id="L140">				referralOpening.getStartTime().toLocalDateTime(),</span>
+<span class="nc" id="L141">				referralOpening.getEndTime().toLocalDateTime()) &amp;&amp;</span>
+<span class="nc bnc" id="L142" title="All 2 branches missed.">			!DateHelpers.timeIsBetweenTimeAndTime(</span>
+				endTimeLdt,
+<span class="nc" id="L144">				referralOpening.getStartTime().toLocalDateTime(),</span>
+<span class="nc" id="L145">				referralOpening.getEndTime().toLocalDateTime())) {</span>
+
+<span class="nc" id="L147">				this.SendPostReply(&quot;/openings&quot;, &quot;&quot;, &quot;Appointment not within scope of opening!&quot;);</span>
+<span class="nc" id="L148">			return;</span>
+		}
+
+		// Make sure no conflicting appointments
+<span class="nc" id="L152">		List&lt;Appointment&gt; allAppointments = DataManager.getAppointmentDAO().retrieveAll();</span>
+<span class="nc bnc" id="L153" title="All 2 branches missed.">		for(Appointment appointment : allAppointments) {</span>
+<span class="nc bnc" id="L154" title="All 2 branches missed.">			if (DateHelpers.timeIsBetweenTimeAndTime(</span>
+<span class="nc" id="L155">					startTimeLdt.plusMinutes(1),</span>
+<span class="nc" id="L156">					appointment.getStartTime().toLocalDateTime(),</span>
+<span class="nc" id="L157">					appointment.getEndTime().toLocalDateTime()) ||</span>
+<span class="nc bnc" id="L158" title="All 2 branches missed.">				DateHelpers.timeIsBetweenTimeAndTime(</span>
+<span class="nc" id="L159">					endTimeLdt.minusMinutes(1),</span>
+<span class="nc" id="L160">					appointment.getStartTime().toLocalDateTime(),</span>
+<span class="nc" id="L161">					appointment.getEndTime().toLocalDateTime()) ||</span>
+<span class="nc bnc" id="L162" title="All 2 branches missed.">				DateHelpers.timeIsBetweenTimeAndTime( // catches edge case of iAppointment being inside potential new one</span>
+<span class="nc" id="L163">					appointment.getStartTime().toLocalDateTime().plusMinutes(1),</span>
+					startTimeLdt,
+					endTimeLdt)) {
+
+<span class="nc" id="L167">				this.SendPostReply(&quot;/openings&quot;, &quot;&quot;, &quot;Appointment conflicts with appointment: %5B&quot; + appointment.getRecID() + &quot;%5D!&quot;);</span>
+<span class="nc" id="L168">				return;</span>
+			}
+<span class="nc" id="L170">		}</span>
+
+<span class="nc" id="L172">		logger.debug(&quot;Attempting to create new appointment ...&quot;);</span>
+		
+<span class="nc" id="L174">		Appointment appointment = new Appointment(studentIdInt, instructorIdInt, year, month, day, startHour, startMinute, year, month, endDay, endHour, endMinute);</span>
+<span class="nc" id="L175">		DataManager.getAppointmentDAO().insert(appointment);</span>
+<span class="nc" id="L176">		logger.info(DataManager.getAppointmentDAO().size() + &quot; records total&quot;);</span>
+<span class="nc" id="L177">		logger.debug(&quot;Created new appointment: [{}]&quot;, appointment);</span>
+		
+<span class="nc" id="L179">		this.SendPostReply(&quot;/appointments&quot;, &quot;&quot;, &quot;Appointment created!&quot;);</span>
+<span class="nc" id="L180">		return;</span>
+	}
+	
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

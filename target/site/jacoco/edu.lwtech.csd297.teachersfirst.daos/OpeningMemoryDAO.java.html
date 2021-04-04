@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>OpeningMemoryDAO.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">teachersFirst</a> &gt; <a href="index.source.html" class="el_package">edu.lwtech.csd297.teachersfirst.daos</a> &gt; <span class="el_source">OpeningMemoryDAO.java</span></div><h1>OpeningMemoryDAO.java</h1><pre class="source lang-java linenums">package edu.lwtech.csd297.teachersfirst.daos;
+
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.apache.logging.log4j.*;
+
+import edu.lwtech.csd297.teachersfirst.DataManager;
+import edu.lwtech.csd297.teachersfirst.DateHelpers;
+import edu.lwtech.csd297.teachersfirst.pojos.*;
+
+public class OpeningMemoryDAO implements DAO&lt;Opening&gt; {
+<span class="nc" id="L13">    private static final Logger logger = LogManager.getLogger(OpeningMemoryDAO.class.getName());</span>
+
+	private AtomicInteger nextListRecID;
+	private List&lt;Opening&gt; openingDB;
+
+	// ----------------------------------------------------------------
+
+<span class="nc" id="L20">	public OpeningMemoryDAO() {</span>
+<span class="nc" id="L21">		this.nextListRecID = new AtomicInteger(1000);</span>
+<span class="nc" id="L22">		this.openingDB = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L23">	}</span>
+
+	// ----------------------------------------------------------------
+
+	public boolean initialize(String initParams) {
+<span class="nc bnc" id="L28" title="All 2 branches missed.">		if (initParams == null)</span>
+<span class="nc" id="L29">			throw new IllegalArgumentException(&quot;init: initParams cannot be null&quot;);</span>
+<span class="nc" id="L30">		logger.debug(&quot;Initializing MemoryDAO with: '{}'&quot;, initParams);</span>
+
+<span class="nc" id="L32">		addDemoData();</span>
+<span class="nc" id="L33">		return true;</span>
+	}
+
+	public void terminate() {
+<span class="nc" id="L37">		logger.debug(&quot;Terminating MemoryDAO...&quot;);</span>
+<span class="nc" id="L38">		openingDB = null;</span>
+<span class="nc" id="L39">	}</span>
+
+	public int insert(Opening pojo) {
+<span class="nc bnc" id="L42" title="All 2 branches missed.">		if (pojo == null)</span>
+<span class="nc" id="L43">			throw new IllegalArgumentException(&quot;insert: cannot insert null object&quot;);</span>
+<span class="nc bnc" id="L44" title="All 2 branches missed.">		if (pojo.getRecID() != -1)</span>
+<span class="nc" id="L45">			throw new IllegalArgumentException(&quot;insert: object is already in database (recID != -1)&quot;);</span>
+<span class="nc" id="L46">		logger.debug(&quot;Inserting &quot; + pojo + &quot;...&quot;);</span>
+
+<span class="nc" id="L48">		pojo.setRecID(nextListRecID.incrementAndGet());</span>
+<span class="nc" id="L49">		openingDB.add(pojo);</span>
+
+<span class="nc" id="L51">		logger.debug(&quot;Item successfully inserted!&quot;);</span>
+<span class="nc" id="L52">		return pojo.getRecID();</span>
+	}
+
+	public Opening retrieveByID(int id) {
+<span class="nc bnc" id="L56" title="All 2 branches missed.">		if (id &lt; 0)</span>
+<span class="nc" id="L57">			throw new IllegalArgumentException(&quot;retrieveByID: id cannot be negative&quot;);</span>
+<span class="nc" id="L58">		logger.debug(&quot;Getting object with ID: {} ...&quot;, id);</span>
+
+<span class="nc" id="L60">		Opening foundObject = null;</span>
+<span class="nc bnc" id="L61" title="All 2 branches missed.">		for (Opening pojo : openingDB) {</span>
+<span class="nc bnc" id="L62" title="All 2 branches missed.">			if (pojo.getRecID() == id) {</span>
+<span class="nc" id="L63">				foundObject = pojo;</span>
+<span class="nc" id="L64">				break;</span>
+			}
+<span class="nc" id="L66">		}</span>
+<span class="nc" id="L67">		return foundObject;</span>
+	}
+
+	public Opening retrieveByIndex(int index) {
+		// Note: indexes are zero-based
+<span class="nc bnc" id="L72" title="All 2 branches missed.">		if (index &lt; 0)</span>
+<span class="nc" id="L73">			throw new IllegalArgumentException(&quot;retrieveByIndex: index cannot be negative&quot;);</span>
+<span class="nc" id="L74">		logger.debug(&quot;Getting object with index: {} ...&quot;, index);</span>
+
+<span class="nc" id="L76">		return openingDB.get(index);</span>
+	}
+
+	public List&lt;Opening&gt; retrieveAll() {
+<span class="nc" id="L80">		logger.debug(&quot;Getting all POJOs ...&quot;);</span>
+<span class="nc" id="L81">		return new ArrayList&lt;&gt;(openingDB); // Return copy of DB collection</span>
+	}
+
+	public List&lt;Integer&gt; retrieveAllIDs() {
+<span class="nc" id="L85">		logger.debug(&quot;Getting all IDs...&quot;);</span>
+
+<span class="nc" id="L87">		List&lt;Integer&gt; listIDs = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L88" title="All 2 branches missed.">		for (Opening pojo : openingDB) {</span>
+<span class="nc" id="L89">			listIDs.add(pojo.getRecID());</span>
+<span class="nc" id="L90">		}</span>
+<span class="nc" id="L91">		return listIDs;</span>
+	}
+
+	public List&lt;Opening&gt; search(String keyword) {
+<span class="nc bnc" id="L95" title="All 2 branches missed.">		if (keyword == null)</span>
+<span class="nc" id="L96">			throw new IllegalArgumentException(&quot;search: keyword cannot be null&quot;);</span>
+<span class="nc" id="L97">		logger.debug(&quot;Searching for objects containing: '{}'&quot;, keyword);</span>
+
+<span class="nc" id="L99">		keyword = keyword.toLowerCase();</span>
+<span class="nc" id="L100">		List&lt;Opening&gt; pojosFound = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L101" title="All 2 branches missed.">		for (Opening pojo : openingDB) {</span>
+<span class="nc bnc" id="L102" title="All 2 branches missed.">			if (pojo.getName().toLowerCase().contains(keyword)) {</span>
+<span class="nc" id="L103">				pojosFound.add(pojo);</span>
+<span class="nc" id="L104">				break;</span>
+			}
+<span class="nc" id="L106">		}</span>
+		//logger.debug(&quot;Found {} objects with the keyword '{}'!&quot;, pojosFound.size(), keyword);
+<span class="nc" id="L108">		return pojosFound;</span>
+	}
+
+	public int size() {
+<span class="nc" id="L112">		return openingDB.size();</span>
+	}
+
+	public boolean update(Opening pojo) {
+<span class="nc bnc" id="L116" title="All 2 branches missed.">		if (pojo == null)</span>
+<span class="nc" id="L117">			throw new IllegalArgumentException(&quot;update: cannot update null object&quot;);</span>
+<span class="nc" id="L118">		logger.debug(&quot;Trying to update object with ID: {} ...&quot;, pojo.getRecID());</span>
+
+<span class="nc bnc" id="L120" title="All 2 branches missed.">		for (int i = 0; i &lt; openingDB.size(); i++) {</span>
+<span class="nc bnc" id="L121" title="All 2 branches missed.">			if (openingDB.get(i).getRecID() == pojo.getRecID()) {</span>
+<span class="nc" id="L122">				openingDB.set(i, pojo);</span>
+<span class="nc" id="L123">				logger.debug(&quot;Successfully updated: {} !&quot;, pojo.getRecID());</span>
+<span class="nc" id="L124">				return true;</span>
+			}
+		}
+<span class="nc" id="L127">		logger.debug(&quot;Unable to update object: {}.  RecID not found.&quot;, pojo.getRecID());</span>
+<span class="nc" id="L128">		return false;</span>
+	}
+
+	public void delete(int id) {
+<span class="nc bnc" id="L132" title="All 2 branches missed.">		if (id &lt; 0)</span>
+<span class="nc" id="L133">			throw new IllegalArgumentException(&quot;delete: id cannot be negative&quot;);</span>
+<span class="nc" id="L134">		logger.debug(&quot;Trying to delete object with ID: {} ...&quot;, id);</span>
+
+<span class="nc" id="L136">		Opening pojoFound = null;</span>
+<span class="nc bnc" id="L137" title="All 2 branches missed.">		for (Opening pojo : openingDB) {</span>
+<span class="nc bnc" id="L138" title="All 2 branches missed.">			if (pojo.getRecID() == id) {</span>
+<span class="nc" id="L139">				pojoFound = pojo;</span>
+<span class="nc" id="L140">				break;</span>
+			}
+<span class="nc" id="L142">		}</span>
+<span class="nc bnc" id="L143" title="All 2 branches missed.">		if (pojoFound != null) {</span>
+<span class="nc" id="L144">			openingDB.remove(pojoFound);</span>
+<span class="nc" id="L145">			logger.debug(&quot;Successfully deleted object with ID: {}&quot;, id);</span>
+		} else {
+<span class="nc" id="L147">			logger.debug(&quot;Unable to delete object with ID: {}. List not found.&quot;, id);</span>
+		}
+<span class="nc" id="L149">	}</span>
+
+	// =================================================================
+
+	private void addDemoData() {
+<span class="nc" id="L154">		logger.debug(&quot;Creating demo data...&quot;);</span>
+
+<span class="nc" id="L156">		List&lt;Member&gt; members = DataManager.getMemberDAO().retrieveAll();</span>
+
+<span class="nc" id="L158">		insert(new Opening(members.get(1).getRecID(), DateHelpers.toTimestamp(&quot;2021/03/16 07:00:00&quot;), DateHelpers.toTimestamp(&quot;2021/03/16 10:00:00&quot;)));</span>
+<span class="nc" id="L159">		insert(new Opening(members.get(3).getRecID(), DateHelpers.toTimestamp(&quot;2021/03/17 11:00:00&quot;), DateHelpers.toTimestamp(&quot;2021/03/17 14:00:00&quot;)));</span>
+<span class="nc" id="L160">		insert(new Opening(members.get(0).getRecID(), DateHelpers.toTimestamp(&quot;2021/03/17 11:00:00&quot;), DateHelpers.toTimestamp(&quot;2021/03/17 15:00:00&quot;)));</span>
+<span class="nc" id="L161">		insert(new Opening(members.get(0).getRecID(), DateHelpers.toTimestamp(&quot;2021/03/19 06:00:00&quot;), DateHelpers.toTimestamp(&quot;2021/03/19 18:00:00&quot;)));</span>
+<span class="nc" id="L162">		insert(new Opening(members.get(1).getRecID(), DateHelpers.toTimestamp(&quot;2021/03/19 07:00:00&quot;), DateHelpers.toTimestamp(&quot;2021/03/19 17:00:00&quot;)));</span>
+<span class="nc" id="L163">		insert(new Opening(members.get(2).getRecID(), DateHelpers.toTimestamp(&quot;2021/03/19 23:00:00&quot;), DateHelpers.toTimestamp(&quot;2021/03/19 06:00:00&quot;)));</span>
+<span class="nc" id="L164">		insert(new Opening(members.get(2).getRecID(), DateHelpers.toTimestamp(&quot;2021/03/20 02:00:00&quot;), DateHelpers.toTimestamp(&quot;2021/03/20 08:00:00&quot;)));</span>
+<span class="nc" id="L165">		insert(new Opening(members.get(3).getRecID(), DateHelpers.toTimestamp(&quot;2021/03/20 16:00:00&quot;), DateHelpers.toTimestamp(&quot;2021/03/20 00:00:00&quot;)));</span>
+<span class="nc" id="L166">		insert(new Opening(members.get(2).getRecID(), DateHelpers.toTimestamp(&quot;2021/03/23 09:00:00&quot;), DateHelpers.toTimestamp(&quot;2021/03/23 18:00:00&quot;)));</span>
+<span class="nc" id="L167">		insert(new Opening(members.get(1).getRecID(), DateHelpers.toTimestamp(&quot;2021/03/24 11:00:00&quot;), DateHelpers.toTimestamp(&quot;2021/03/24 21:00:00&quot;)));</span>
+<span class="nc" id="L168">		insert(new Opening(members.get(3).getRecID(), DateHelpers.toTimestamp(&quot;2021/03/25 09:00:00&quot;), DateHelpers.toTimestamp(&quot;2021/03/25 18:00:00&quot;)));</span>
+<span class="nc" id="L169">		insert(new Opening(members.get(0).getRecID(), DateHelpers.toTimestamp(&quot;2021/03/29 06:00:00&quot;), DateHelpers.toTimestamp(&quot;2021/03/29 18:00:00&quot;)));</span>
+<span class="nc" id="L170">		insert(new Opening(members.get(0).getRecID(), DateHelpers.toTimestamp(&quot;2021/03/31 06:00:00&quot;), DateHelpers.toTimestamp(&quot;2021/03/31 18:00:00&quot;)));</span>
+<span class="nc" id="L171">		insert(new Opening(members.get(0).getRecID(), DateHelpers.toTimestamp(&quot;2021/04/02 06:00:00&quot;), DateHelpers.toTimestamp(&quot;2021/04/02 18:00:00&quot;)));</span>
+<span class="nc" id="L172">		insert(new Opening(members.get(2).getRecID(), DateHelpers.toTimestamp(&quot;2021/04/04 12:00:00&quot;), DateHelpers.toTimestamp(&quot;2021/04/04 13:00:00&quot;)));</span>
+<span class="nc" id="L173">		insert(new Opening(members.get(1).getRecID(), DateHelpers.toTimestamp(&quot;2021/04/05 12:00:00&quot;), DateHelpers.toTimestamp(&quot;2021/04/05 13:00:00&quot;)));</span>
+<span class="nc" id="L174">		insert(new Opening(members.get(3).getRecID(), DateHelpers.toTimestamp(&quot;2021/04/06 12:00:00&quot;), DateHelpers.toTimestamp(&quot;2021/04/06 13:00:00&quot;)));</span>
+<span class="nc" id="L175">		insert(new Opening(members.get(2).getRecID(), DateHelpers.toTimestamp(&quot;2021/04/07 12:00:00&quot;), DateHelpers.toTimestamp(&quot;2021/04/07 13:00:00&quot;)));</span>
+<span class="nc" id="L176">		insert(new Opening(members.get(1).getRecID(), DateHelpers.toTimestamp(&quot;2021/04/08 12:00:00&quot;), DateHelpers.toTimestamp(&quot;2021/04/08 13:00:00&quot;)));</span>
+<span class="nc" id="L177">		insert(new Opening(members.get(3).getRecID(), DateHelpers.toTimestamp(&quot;2021/04/09 12:00:00&quot;), DateHelpers.toTimestamp(&quot;2021/04/09 13:00:00&quot;)));</span>
+<span class="nc" id="L178">		insert(new Opening(members.get(4).getRecID(), 2021, 4, 13, 4, 30, 2021, 5, 15, 6, 30));</span>
+<span class="nc" id="L179">		insert(new Opening(members.get(4).getRecID(), 2021, 4, 15, 4, 30, 2021, 5, 15, 6, 30));</span>
+
+<span class="nc" id="L181">		logger.info(size() + &quot; records inserted&quot;);</span>
+<span class="nc" id="L182">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

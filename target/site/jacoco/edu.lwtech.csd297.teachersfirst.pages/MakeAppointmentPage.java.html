@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MakeAppointmentPage.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">teachersFirst</a> &gt; <a href="index.source.html" class="el_package">edu.lwtech.csd297.teachersfirst.pages</a> &gt; <span class="el_source">MakeAppointmentPage.java</span></div><h1>MakeAppointmentPage.java</h1><pre class="source lang-java linenums">package edu.lwtech.csd297.teachersfirst.pages;
+
+import java.time.*;
+import java.time.format.*;
+import java.util.*;
+import javax.servlet.http.*;
+
+import edu.lwtech.csd297.teachersfirst.*;
+import edu.lwtech.csd297.teachersfirst.pojos.*;
+
+public class MakeAppointmentPage extends PageLoader {
+
+	// Constructor
+<span class="nc" id="L14">	public MakeAppointmentPage(HttpServletRequest request, HttpServletResponse response) { super(request, response); }</span>
+
+	// Page-specific
+
+	@Override
+	public void loadPage() {
+<span class="nc" id="L20">		templateDataMap.put(&quot;title&quot;, &quot;Make Appointment&quot;);</span>
+
+<span class="nc bnc" id="L22" title="All 2 branches missed.">		if (uid &gt; 0) {</span>
+			
+			// Get Opening / Previous Data
+<span class="nc" id="L25">			final String openingIdString = QueryHelpers.getPost(request, &quot;openingId&quot;);</span>
+<span class="nc" id="L26">			final String studentIdString = QueryHelpers.getGet(request, &quot;studentId&quot;, Integer.toString(uid)); // sets default to self</span>
+			int studentIdInt;
+			try {
+<span class="nc" id="L29">				studentIdInt = Integer.parseInt(studentIdString);</span>
+<span class="nc" id="L30">			} catch (NumberFormatException e) {</span>
+<span class="nc" id="L31">				studentIdInt = 0;</span>
+<span class="nc" id="L32">			}</span>
+<span class="nc bnc" id="L33" title="All 2 branches missed.">			final String studentName = studentIdInt &gt; 0 ? DataManager.getMemberDAO().retrieveByID(studentIdInt).getDisplayName() : &quot;&quot;;</span>
+<span class="nc" id="L34">			final String instructorIdString = QueryHelpers.getGet(request, &quot;instructorId&quot;);</span>
+			int instructorIdInt;
+			try {
+<span class="nc" id="L37">				instructorIdInt = Integer.parseInt(instructorIdString);</span>
+<span class="nc" id="L38">			} catch (NumberFormatException e) {</span>
+<span class="nc" id="L39">				instructorIdInt = 0;</span>
+<span class="nc" id="L40">			}</span>
+<span class="nc bnc" id="L41" title="All 2 branches missed.">			final String instructorName = instructorIdInt &gt; 0 ? DataManager.getMemberDAO().retrieveByID(instructorIdInt).getDisplayName() : &quot;&quot;;</span>
+<span class="nc" id="L42">			final String dateString = QueryHelpers.getGet(request, &quot;date&quot;);</span>
+<span class="nc" id="L43">			final String openingStartTimeString = QueryHelpers.getGet(request, &quot;openingStartTime&quot;);</span>
+<span class="nc" id="L44">			final String openingEndTimeString = QueryHelpers.getGet(request, &quot;openingEndTime&quot;);</span>
+<span class="nc" id="L45">			final String appointmentStartTimeString = QueryHelpers.getGet(request, &quot;appointmentStartTime&quot;);</span>
+<span class="nc" id="L46">			final String appointmentEndTimeString = QueryHelpers.getGet(request, &quot;appointmentEndTime&quot;);</span>
+			//final String appointmentDuration = QueryHelpers.getGet(request, &quot;appointmentDuration&quot;);
+			
+			// If thrown here on a &quot;go back&quot;, assign these:
+<span class="nc" id="L50">			String defaultStartTime = &quot;&quot;;</span>
+<span class="nc" id="L51">			String defaultDuration = &quot;&quot;;</span>
+<span class="nc bnc" id="L52" title="All 4 branches missed.">			if (appointmentStartTimeString != &quot;&quot; &amp;&amp; appointmentEndTimeString != &quot;&quot;) {</span>
+<span class="nc" id="L53">				defaultStartTime = appointmentStartTimeString;</span>
+<span class="nc" id="L54">				final LocalTime st = LocalTime.parse(appointmentStartTimeString);</span>
+<span class="nc" id="L55">				final LocalTime et = LocalTime.parse(appointmentEndTimeString);</span>
+<span class="nc" id="L56">				final int diff = (int) Duration.between(st, et).toMinutes();</span>
+<span class="nc" id="L57">				defaultDuration = DateHelpers.convertMinutesToHM(diff);</span>
+			}
+
+			// Get all possible appointment start times and durations from the opening data:
+<span class="nc" id="L61">			final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern(&quot;MM/dd/yyyy HH:mm&quot;);</span>
+<span class="nc" id="L62">			final LocalDateTime startDateTime = LocalDateTime.parse(dateString + &quot; &quot; + openingStartTimeString, timeFormatter);</span>
+<span class="nc" id="L63">			LocalDateTime endDateTime = LocalDateTime.parse(dateString + &quot; &quot; + openingEndTimeString, timeFormatter);</span>
+<span class="nc bnc" id="L64" title="All 2 branches missed.">			if (endDateTime.compareTo(startDateTime) &lt; 0) endDateTime = endDateTime.plusDays(1);</span>
+<span class="nc" id="L65">			LocalDateTime currentDateTime = startDateTime.plusSeconds(0); // clone time</span>
+<span class="nc" id="L66">			List&lt;String&gt; possibleStartTimes = new ArrayList&lt;String&gt;();</span>
+<span class="nc" id="L67">			List&lt;String&gt; possibleDurations = new ArrayList&lt;String&gt;();</span>
+<span class="nc" id="L68">			int i = 0;</span>
+			
+			// Limit 40: someone can and will place start and end times really far apart...
+<span class="nc bnc" id="L71" title="All 4 branches missed.">			while (currentDateTime.compareTo(endDateTime) &lt; 0 &amp;&amp; possibleStartTimes.size() &lt;= 40) {</span>
+<span class="nc" id="L72">				possibleStartTimes.add(currentDateTime.format(DateTimeFormatter.ofPattern(&quot;HH:mm&quot;)));</span>
+<span class="nc" id="L73">				currentDateTime = currentDateTime.plusMinutes(15);</span>
+<span class="nc" id="L74">				i += 15;</span>
+<span class="nc" id="L75">				possibleDurations.add(DateHelpers.convertMinutesToHM(i));</span>
+			}
+
+			// FreeMarker
+<span class="nc" id="L79">			templateDataMap.put(&quot;openingId&quot;, openingIdString);</span>
+<span class="nc" id="L80">			templateDataMap.put(&quot;studentId&quot;, studentIdString);</span>
+<span class="nc" id="L81">			templateDataMap.put(&quot;studentName&quot;, studentName);</span>
+<span class="nc" id="L82">			templateDataMap.put(&quot;instructorId&quot;, instructorIdString);</span>
+<span class="nc" id="L83">			templateDataMap.put(&quot;instructorName&quot;, instructorName);</span>
+<span class="nc" id="L84">			templateDataMap.put(&quot;date&quot;, dateString);</span>
+<span class="nc" id="L85">			templateDataMap.put(&quot;openingStartTime&quot;, openingStartTimeString);</span>
+<span class="nc" id="L86">			templateDataMap.put(&quot;openingEndTime&quot;, openingEndTimeString);</span>
+<span class="nc" id="L87">			templateDataMap.put(&quot;possibleStartTimes&quot;, possibleStartTimes);</span>
+<span class="nc" id="L88">			templateDataMap.put(&quot;possibleDurations&quot;, possibleDurations);</span>
+<span class="nc" id="L89">			templateDataMap.put(&quot;defaultStartTime&quot;, defaultStartTime);</span>
+<span class="nc" id="L90">			templateDataMap.put(&quot;defaultDuration&quot;, defaultDuration);</span>
+	
+		}
+
+		// FreeMarker
+<span class="nc" id="L95">		templateName = &quot;makeAppointment.ftl&quot;;</span>
+
+		// Go
+<span class="nc" id="L98">		trySendResponse();</span>
+<span class="nc" id="L99">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

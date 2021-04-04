@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JsonUtils.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">teachersFirst</a> &gt; <a href="index.source.html" class="el_package">edu.lwtech.csd297.teachersfirst.pojos</a> &gt; <span class="el_source">JsonUtils.java</span></div><h1>JsonUtils.java</h1><pre class="source lang-java linenums">package edu.lwtech.csd297.teachersfirst.pojos;
+
+import java.util.*;
+
+<span class="nc" id="L5">public class JsonUtils {</span>
+	
+	public static String queryToJson(String query) {
+<span class="fc bfc" id="L8" title="All 2 branches covered.">		if (query == null) return &quot;&quot;;</span>
+<span class="fc" id="L9">		String sanitized = query.trim();</span>
+<span class="fc bfc" id="L10" title="All 2 branches covered.">		if (sanitized.isEmpty()) return &quot;&quot;;</span>
+<span class="fc bfc" id="L11" title="All 2 branches covered.">		if (sanitized.substring(0,1).equals(&quot;?&quot;))</span>
+<span class="fc" id="L12">			sanitized = sanitized.substring(1);</span>
+		
+<span class="fc" id="L14">		String[] splits = sanitized.split(&quot;&amp;&quot;);</span>
+		String[] kvPair;
+<span class="fc" id="L16">		int i = 0;</span>
+<span class="fc" id="L17">		StringBuilder sb = new StringBuilder();</span>
+<span class="fc bfc" id="L18" title="All 2 branches covered.">		for (String line : splits) {</span>
+<span class="pc bpc" id="L19" title="1 of 2 branches missed.">			if (i &gt; 0) sb.append(&quot;,&quot;);</span>
+<span class="fc" id="L20">			kvPair = line.split(&quot;=&quot;);</span>
+<span class="fc bfc" id="L21" title="All 2 branches covered.">			if (kvPair.length == 1) {</span>
+<span class="fc" id="L22">				sb.append(&quot;'&quot; + kvPair[0] + &quot;':undefined&quot;);</span>
+<span class="fc bfc" id="L23" title="All 2 branches covered.">			} else if (kvPair.length == 2) {</span>
+<span class="fc" id="L24">				sb.append(&quot;'&quot; + kvPair[0] + &quot;':'&quot; + kvPair[1] + &quot;'&quot;);</span>
+			} else {
+				//TODO: use logger
+<span class="fc" id="L27">				System.out.println(&quot;Invalid query.&quot;);</span>
+<span class="fc" id="L28">				return &quot;&quot;;</span>
+			}
+<span class="fc" id="L30">			i++;</span>
+		}
+<span class="fc" id="L32">		return sb.toString();</span>
+	}
+
+	@SafeVarargs
+	public static String BuildArrays(List&lt;? extends IJsonnable&gt;...joLists) {
+<span class="fc" id="L37">		StringBuilder sb = new StringBuilder();</span>
+		int i;
+<span class="fc" id="L39">		int j = 0;</span>
+<span class="pc bpc" id="L40" title="1 of 2 branches missed.">		if (joLists.length &gt; 1) sb.append(&quot;[&quot;);</span>
+<span class="fc bfc" id="L41" title="All 2 branches covered.">		for (List&lt;? extends IJsonnable&gt; joList : joLists) {</span>
+<span class="pc bpc" id="L42" title="1 of 2 branches missed.">			if (j &gt; 0) sb.append(&quot;,&quot;);</span>
+<span class="fc" id="L43">			i = 0;</span>
+<span class="fc" id="L44">			sb.append(&quot;[&quot;);</span>
+<span class="fc bfc" id="L45" title="All 2 branches covered.">			for (IJsonnable jo : joList) {</span>
+<span class="fc bfc" id="L46" title="All 2 branches covered.">				if (i &gt; 0) sb.append(&quot;,&quot;);</span>
+<span class="fc" id="L47">				sb.append(jo.toJson());</span>
+<span class="fc" id="L48">				i++;</span>
+<span class="fc" id="L49">			}</span>
+<span class="fc" id="L50">			sb.append(&quot;]&quot;);</span>
+<span class="fc" id="L51">			j++;</span>
+		}
+<span class="pc bpc" id="L53" title="1 of 2 branches missed.">		if (joLists.length &gt; 1) sb.append(&quot;]&quot;);</span>
+<span class="fc" id="L54">		return sb.toString();</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

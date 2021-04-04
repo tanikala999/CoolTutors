@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>OpeningSqlDAO.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">teachersFirst</a> &gt; <a href="index.source.html" class="el_package">edu.lwtech.csd297.teachersfirst.daos</a> &gt; <span class="el_source">OpeningSqlDAO.java</span></div><h1>OpeningSqlDAO.java</h1><pre class="source lang-java linenums">package edu.lwtech.csd297.teachersfirst.daos;
+
+import java.sql.*;
+import java.util.*;
+
+import org.apache.logging.log4j.*;
+
+import edu.lwtech.csd297.teachersfirst.DateHelpers;
+import edu.lwtech.csd297.teachersfirst.pojos.*;
+
+public class OpeningSqlDAO implements DAO&lt;Opening&gt; {
+	
+<span class="fc" id="L13">	private static final Logger logger = LogManager.getLogger(OpeningSqlDAO.class.getName());</span>
+
+<span class="fc" id="L15">	private Connection conn = null;</span>
+
+<span class="fc" id="L17">	public OpeningSqlDAO() {</span>
+<span class="fc" id="L18">		this.conn = null;                                   // conn must be created during init()</span>
+<span class="fc" id="L19">	}</span>
+
+	public boolean initialize(String initParams) {
+<span class="fc" id="L22">		logger.info(&quot;Connecting to the database...&quot;);</span>
+
+<span class="fc" id="L24">		conn = SQLUtils.connect(initParams);</span>
+<span class="pc bpc" id="L25" title="1 of 2 branches missed.">		if (conn == null) {</span>
+<span class="nc" id="L26">			logger.error(&quot;Unable to connect to SQL Database: &quot; + initParams);</span>
+<span class="nc" id="L27">			return false;</span>
+		}
+<span class="fc" id="L29">		logger.info(&quot;...connected!&quot;);</span>
+
+<span class="fc" id="L31">		return true;</span>
+	}
+
+	public void terminate() {
+<span class="fc" id="L35">		SQLUtils.disconnect(conn);</span>
+<span class="fc" id="L36">		conn = null;</span>
+<span class="fc" id="L37">	}</span>
+
+	public int insert(Opening opening) {
+<span class="nc" id="L40">		logger.debug(&quot;Inserting &quot; + opening + &quot;...&quot;);</span>
+
+<span class="nc bnc" id="L42" title="All 2 branches missed.">		if (opening.getRecID() != -1) {</span>
+<span class="nc" id="L43">			logger.error(&quot;Attempting to add previously added Opening: &quot; + opening);</span>
+<span class="nc" id="L44">			return -1;</span>
+		}
+
+<span class="nc" id="L47">		String query = &quot;INSERT INTO Openings (instructorID, startTime, endTime) VALUES (?,?,?)&quot;;</span>
+
+<span class="nc" id="L49">		int recID = SQLUtils.executeSqlOpeningInsert(conn, query, opening.getRecID(), opening.getInstructorID(), opening.getStartTime(), opening.getEndTime());    </span>
+		
+<span class="nc" id="L51">		logger.debug(&quot;Opening successfully inserted with ID = &quot; + recID);</span>
+<span class="nc" id="L52">		return recID;</span>
+	}
+
+	public Opening retrieveByID(int recID) {
+		//logger.debug(&quot;Trying to get Opening with ID: &quot; + recID);
+		
+<span class="nc" id="L58">		String query = &quot;SELECT recID, instructorID, startTime, endTime&quot;;</span>
+<span class="nc" id="L59">		query += &quot; FROM Openings WHERE recID=&quot; + recID;</span>
+
+<span class="nc" id="L61">		List&lt;SQLRow&gt; rows = SQLUtils.executeSQL(conn, query);</span>
+<span class="nc bnc" id="L62" title="All 4 branches missed.">		if (rows == null || rows.size() == 0) {</span>
+<span class="nc" id="L63">			logger.debug(&quot;Did not find opening.&quot;);</span>
+<span class="nc" id="L64">			return null;</span>
+		}
+		
+<span class="nc" id="L67">		SQLRow row = rows.get(0);</span>
+<span class="nc" id="L68">		Opening opening = convertRowToOpening(row);</span>
+<span class="nc" id="L69">		return opening;</span>
+	}
+	
+	public Opening retrieveByIndex(int index) {
+		//logger.debug(&quot;Trying to get Opening with index: &quot; + index);
+		
+<span class="nc" id="L75">		index++;</span>
+
+<span class="nc bnc" id="L77" title="All 2 branches missed.">		if (index &lt; 1) {</span>
+<span class="nc" id="L78">			logger.debug(&quot;retrieveByIndex: index cannot be negative&quot;);</span>
+<span class="nc" id="L79">			return null;</span>
+		}
+
+<span class="nc" id="L82">		String query = &quot;SELECT recID, instructorID, startTime, endTime&quot;;</span>
+<span class="nc" id="L83">		query += &quot; FROM Openings ORDER BY recID LIMIT &quot; + index;</span>
+
+<span class="nc" id="L85">		List&lt;SQLRow&gt; rows = SQLUtils.executeSQL(conn, query);</span>
+<span class="nc bnc" id="L86" title="All 4 branches missed.">		if (rows == null || rows.size() == 0) {</span>
+<span class="nc" id="L87">			logger.debug(&quot;Did not find opening.&quot;);</span>
+<span class="nc" id="L88">			return null;</span>
+		}
+		
+<span class="nc" id="L91">		SQLRow row = rows.get(rows.size() - 1);</span>
+<span class="nc" id="L92">		Opening opening = convertRowToOpening(row);</span>
+<span class="nc" id="L93">		return opening;</span>
+	}
+	
+	public List&lt;Opening&gt; retrieveAll() {
+<span class="nc" id="L97">		logger.debug(&quot;Getting all Openings...&quot;);</span>
+		
+<span class="nc" id="L99">		String query = &quot;SELECT recID, instructorID, startTime, endTime&quot;;</span>
+<span class="nc" id="L100">		query += &quot; FROM Openings ORDER BY recID&quot;;</span>
+
+<span class="nc" id="L102">		List&lt;SQLRow&gt; rows = SQLUtils.executeSQL(conn, query);</span>
+<span class="nc bnc" id="L103" title="All 4 branches missed.">		if (rows == null || rows.size() == 0) {</span>
+<span class="nc" id="L104">			logger.debug(&quot;No openings found!&quot;);</span>
+<span class="nc" id="L105">			return null;</span>
+		}
+
+<span class="nc" id="L108">		List&lt;Opening&gt; openings = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L109" title="All 2 branches missed.">		for (SQLRow row : rows) {</span>
+<span class="nc" id="L110">			Opening opening = convertRowToOpening(row);</span>
+<span class="nc" id="L111">			openings.add(opening);</span>
+<span class="nc" id="L112">		}</span>
+<span class="nc" id="L113">		return openings;</span>
+	}
+	
+	public List&lt;Integer&gt; retrieveAllIDs() {
+<span class="nc" id="L117">		logger.debug(&quot;Getting all Opening IDs...&quot;);</span>
+
+<span class="nc" id="L119">		String query = &quot;SELECT recID FROM Openings ORDER BY recID&quot;;</span>
+
+<span class="nc" id="L121">		List&lt;SQLRow&gt; rows = SQLUtils.executeSQL(conn, query);</span>
+<span class="nc bnc" id="L122" title="All 4 branches missed.">		if (rows == null || rows.size() == 0) {</span>
+<span class="nc" id="L123">			logger.debug(&quot;No openings found!&quot;);</span>
+<span class="nc" id="L124">			return null;</span>
+		}
+		
+<span class="nc" id="L127">		List&lt;Integer&gt; recIDs = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L128" title="All 2 branches missed.">		for (SQLRow row : rows) {</span>
+<span class="nc" id="L129">			String value = row.getItem(&quot;recID&quot;);</span>
+<span class="nc" id="L130">			int i = Integer.parseInt(value);</span>
+<span class="nc" id="L131">			recIDs.add(i);</span>
+<span class="nc" id="L132">		}</span>
+<span class="nc" id="L133">		return recIDs;</span>
+	}
+
+	public List&lt;Opening&gt; search(String keyword) {
+<span class="nc" id="L137">		logger.debug(&quot;Searching for opening with '&quot; + keyword + &quot;'&quot;);</span>
+
+<span class="nc" id="L139">		String query = &quot;SELECT recID, instructorID, startTime, endTime FROM Openings WHERE&quot;;</span>
+<span class="nc" id="L140">		query += &quot; username like ?&quot;;</span>
+<span class="nc" id="L141">		query += &quot; ORDER BY recID&quot;;</span>
+
+<span class="nc" id="L143">		keyword = &quot;%&quot; + keyword + &quot;%&quot;;</span>
+
+<span class="nc" id="L145">		List&lt;SQLRow&gt; rows = SQLUtils.executeSQL(conn, query, keyword);</span>
+<span class="nc bnc" id="L146" title="All 4 branches missed.">		if (rows == null || rows.size() == 0) {</span>
+<span class="nc" id="L147">			logger.debug(&quot;No openings found!&quot;);</span>
+<span class="nc" id="L148">			return null;</span>
+		}
+
+<span class="nc" id="L151">		List&lt;Opening&gt; openings = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L152" title="All 2 branches missed.">		for (SQLRow row : rows) {</span>
+<span class="nc" id="L153">			Opening opening = convertRowToOpening(row);</span>
+<span class="nc" id="L154">			openings.add(opening);</span>
+<span class="nc" id="L155">		}</span>
+<span class="nc" id="L156">		return openings;</span>
+	}
+
+	public boolean update(Opening opening) {
+<span class="nc" id="L160">		throw new UnsupportedOperationException(&quot;Unable to update existing opening in database.&quot;);</span>
+	}
+
+	public void delete(int recID) {
+<span class="nc" id="L164">		logger.debug(&quot;Trying to delete Opening with ID: &quot; + recID);</span>
+
+<span class="nc" id="L166">		String query = &quot;DELETE FROM Openings WHERE recID=&quot; + recID;</span>
+<span class="nc" id="L167">		SQLUtils.executeSQL(conn, query);</span>
+<span class="nc" id="L168">	}</span>
+	
+	public int size() {
+<span class="nc" id="L171">		logger.debug(&quot;Getting the number of rows...&quot;);</span>
+
+<span class="nc" id="L173">		String query = &quot;SELECT count(*) as cnt FROM Openings&quot;;</span>
+
+<span class="nc" id="L175">		List&lt;SQLRow&gt; rows = SQLUtils.executeSQL(conn, query);</span>
+<span class="nc bnc" id="L176" title="All 4 branches missed.">		if (rows == null || rows.size() == 0) {</span>
+<span class="nc" id="L177">			logger.error(&quot;No openings found!&quot;);</span>
+<span class="nc" id="L178">			return 0;</span>
+		}
+
+<span class="nc" id="L181">		String value = rows.get(0).getItem(&quot;cnt&quot;);</span>
+<span class="nc" id="L182">		return Integer.parseInt(value);</span>
+	}    
+
+	// =====================================================================
+
+	private Opening convertRowToOpening(SQLRow row) {
+<span class="nc" id="L188">		logger.debug(&quot;Converting &quot; + row + &quot; to Opening...&quot;);</span>
+<span class="nc" id="L189">		int recID = Integer.parseInt(row.getItem(&quot;recID&quot;));</span>
+<span class="nc" id="L190">		int instructorID = Integer.parseInt(row.getItem(&quot;instructorID&quot;));</span>
+<span class="nc" id="L191">		Timestamp startTime = DateHelpers.fromSqlDatetimeToTimestamp(row.getItem(&quot;startTime&quot;));</span>
+<span class="nc" id="L192">		Timestamp endTime = DateHelpers.fromSqlDatetimeToTimestamp(row.getItem(&quot;endTime&quot;));</span>
+<span class="nc" id="L193">		return new Opening(recID, instructorID, startTime, endTime);</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

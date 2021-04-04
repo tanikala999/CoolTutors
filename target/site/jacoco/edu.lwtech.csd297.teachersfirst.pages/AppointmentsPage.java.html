@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AppointmentsPage.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">teachersFirst</a> &gt; <a href="index.source.html" class="el_package">edu.lwtech.csd297.teachersfirst.pages</a> &gt; <span class="el_source">AppointmentsPage.java</span></div><h1>AppointmentsPage.java</h1><pre class="source lang-java linenums">package edu.lwtech.csd297.teachersfirst.pages;
+
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import javax.servlet.http.*;
+
+import edu.lwtech.csd297.teachersfirst.pojos.*;
+import edu.lwtech.csd297.teachersfirst.*;
+import edu.lwtech.csd297.teachersfirst.daos.*;
+public class AppointmentsPage extends PageLoader {
+
+	public class PrettifiedAppointment implements IJsonnable {
+
+		private int id;
+		private int instructorId;
+		private String instructorName;
+		private int studentId;
+		private String studentName;
+		private String date;
+		private String startTime;
+		private String endTime;
+		private boolean isMyAppointment;
+
+<span class="nc" id="L24">		public PrettifiedAppointment(int id, int instructorId, String instructor, int studentId, String student, String date, String startTime, String endTime, boolean isMyAppointment) {</span>
+<span class="nc" id="L25">			this.id = id;</span>
+<span class="nc" id="L26">			this.instructorId = instructorId;</span>
+<span class="nc" id="L27">			this.instructorName = instructor;</span>
+<span class="nc" id="L28">			this.studentId = studentId;</span>
+<span class="nc" id="L29">			this.studentName = student;</span>
+<span class="nc" id="L30">			this.date = date;</span>
+<span class="nc" id="L31">			this.startTime = startTime;</span>
+<span class="nc" id="L32">			this.endTime = endTime;</span>
+<span class="nc" id="L33">			this.isMyAppointment = isMyAppointment;</span>
+<span class="nc" id="L34">		}</span>
+
+<span class="nc" id="L36">		public int getId() { return id; }</span>
+<span class="nc" id="L37">		public int getInstructorId() { return instructorId; }</span>
+<span class="nc" id="L38">		public String getInstructorName() { return instructorName; }</span>
+<span class="nc" id="L39">		public int getStudentId() { return studentId; }</span>
+<span class="nc" id="L40">		public String getStudentName() { return studentName; }</span>
+<span class="nc" id="L41">		public String getDate() { return date; }</span>
+<span class="nc" id="L42">		public String getStartTime() { return startTime; }</span>
+<span class="nc" id="L43">		public String getEndTime() { return endTime; }</span>
+<span class="nc" id="L44">		public boolean getIsMyAppointment() { return isMyAppointment; }</span>
+		@Override public String toJson() {
+<span class="nc" id="L46">			return &quot;{\&quot;id\&quot;:\&quot;&quot; + this.id +</span>
+					&quot;\&quot;,\&quot;instructorId\&quot;:\&quot;&quot; + this.instructorId +
+					&quot;\&quot;,\&quot;instructorName\&quot;:\&quot;&quot; + this.instructorName +
+					&quot;\&quot;,\&quot;studentId\&quot;:\&quot;&quot; + this.studentId +
+					&quot;\&quot;,\&quot;studentName\&quot;:\&quot;&quot; + this.studentName +
+					&quot;\&quot;,\&quot;date\&quot;:\&quot;&quot; + this.date +
+					&quot;\&quot;,\&quot;startTime\&quot;:\&quot;&quot; + this.startTime +
+					&quot;\&quot;,\&quot;endTime\&quot;:\&quot;&quot; + this.endTime +
+					&quot;\&quot;,\&quot;isMyAppointment\&quot;:\&quot;&quot; + this.isMyAppointment +
+					&quot;\&quot;}&quot;;
+		}
+	}
+
+	// Constructor
+<span class="nc" id="L60">	public AppointmentsPage(HttpServletRequest request, HttpServletResponse response) { super(request, response); }</span>
+
+	// Page-specific
+
+	@Override
+	public void loadPage() {
+<span class="nc" id="L66">		templateDataMap.put(&quot;title&quot;, &quot;Appointments&quot;);</span>
+
+		// key variables
+<span class="nc" id="L69">		final List&lt;PrettifiedAppointment&gt; futureAppointments = new ArrayList&lt;PrettifiedAppointment&gt;();		</span>
+<span class="nc" id="L70">		final List&lt;PrettifiedAppointment&gt; pastAppointments= new ArrayList&lt;PrettifiedAppointment&gt;();</span>
+<span class="nc" id="L71">		boolean jsonMode = QueryHelpers.getGetBool(request, &quot;json&quot;);</span>
+		//logger.debug(&quot;Json Mode: &quot; + (jsonMode ? &quot;true&quot; : &quot;false&quot;));
+<span class="nc" id="L73">		String filterMemberIdString = QueryHelpers.getGet(request, &quot;memberId&quot;);</span>
+		int filterMemberId;
+<span class="nc bnc" id="L75" title="All 4 branches missed.">		if (!filterMemberIdString.isEmpty() &amp;&amp; isAdmin) {</span>
+			try {
+<span class="nc" id="L77">				filterMemberId = Integer.parseInt(filterMemberIdString);</span>
+<span class="nc" id="L78">			} catch (NumberFormatException e) {</span>
+<span class="nc" id="L79">				filterMemberId = -1;</span>
+<span class="nc" id="L80">			}</span>
+<span class="nc bnc" id="L81" title="All 4 branches missed.">		} else if (filterMemberIdString.isEmpty() &amp;&amp; isAdmin) {</span>
+<span class="nc" id="L82">			filterMemberId = -1;</span>
+		} else {
+<span class="nc" id="L84">			filterMemberId = uid;</span>
+		}
+		
+		// make sure we're logged in
+<span class="nc bnc" id="L88" title="All 2 branches missed.">		if (uid &gt; 0) {</span>
+<span class="nc" id="L89">			final DAO&lt;Member&gt; memberDAO = DataManager.getMemberDAO();</span>
+<span class="nc" id="L90">			final List&lt;Appointment&gt; appointmentDAO = DataManager.getAppointmentDAO().retrieveAll();;</span>
+
+			// temp vars for more readable code below
+			String instructorName;
+			String studentName;
+			String date;
+			String startTime;
+			String endTime;
+			
+			// check all DAOs
+<span class="nc bnc" id="L100" title="All 2 branches missed.">			for (Appointment appointment : appointmentDAO) {</span>
+				// make sure we're either an admin (sees everything) or in one of the appointments
+<span class="nc bnc" id="L102" title="All 6 branches missed.">				if ((isAdmin &amp;&amp; filterMemberId == -1) || appointment.getIsMyAppointment(uid)) {</span>
+<span class="nc" id="L103">					instructorName = memberDAO.retrieveByID(appointment.getInstructorID()).getDisplayName();</span>
+<span class="nc" id="L104">					studentName = memberDAO.retrieveByID(appointment.getStudentID()).getDisplayName();</span>
+<span class="nc" id="L105">					date = appointment.getStartTime().toLocalDateTime().format(DateTimeFormatter.ofPattern(&quot;MM/dd/yyyy&quot;));</span>
+<span class="nc" id="L106">					startTime = appointment.getStartTime().toLocalDateTime().format(DateTimeFormatter.ofPattern(&quot;HH:mm&quot;));</span>
+<span class="nc" id="L107">					endTime = appointment.getEndTime().toLocalDateTime().format(DateTimeFormatter.ofPattern(&quot;HH:mm&quot;));</span>
+<span class="nc bnc" id="L108" title="All 2 branches missed.">					if (DateHelpers.isInThePast(appointment.getEndTime().toLocalDateTime())) {</span>
+<span class="nc" id="L109">						pastAppointments.add(</span>
+							new PrettifiedAppointment(
+<span class="nc" id="L111">								appointment.getRecID(),</span>
+<span class="nc" id="L112">								appointment.getInstructorID(),</span>
+								instructorName,
+<span class="nc" id="L114">								appointment.getStudentID(),</span>
+								studentName, date, startTime, endTime,
+<span class="nc" id="L116">								appointment.getIsMyAppointment(uid)</span>
+							)
+						);
+					} else {
+<span class="nc" id="L120">						futureAppointments.add(</span>
+							new PrettifiedAppointment(
+<span class="nc" id="L122">								appointment.getRecID(),</span>
+<span class="nc" id="L123">								appointment.getInstructorID(),</span>
+								instructorName,
+<span class="nc" id="L125">								appointment.getStudentID(),</span>
+								studentName, date, startTime, endTime,
+<span class="nc" id="L127">								appointment.getIsMyAppointment(uid)</span>
+							)
+						);
+					}
+				}
+<span class="nc" id="L132">			}</span>
+
+<span class="nc" id="L134">			Collections.reverse(pastAppointments);</span>
+		}
+
+		// Go
+<span class="nc bnc" id="L138" title="All 2 branches missed.">		if (jsonMode) {</span>
+<span class="nc" id="L139">			String json = JsonUtils.BuildArrays(futureAppointments, pastAppointments);</span>
+			//logger.debug(&quot;Json: &quot; + json);
+<span class="nc" id="L141">			trySendJson(json);</span>
+<span class="nc" id="L142">		} else {</span>
+
+			// FreeMarker
+<span class="nc" id="L145">			templateDataMap.put(&quot;pastAppointments&quot;, pastAppointments);</span>
+<span class="nc" id="L146">			templateDataMap.put(&quot;futureAppointments&quot;, futureAppointments);</span>
+<span class="nc" id="L147">			templateName = &quot;appointments.ftl&quot;;</span>
+
+<span class="nc" id="L149">			trySendResponse();</span>
+		}
+<span class="nc" id="L151">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

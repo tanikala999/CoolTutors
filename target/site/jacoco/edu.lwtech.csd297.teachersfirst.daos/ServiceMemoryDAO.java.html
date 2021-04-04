@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ServiceMemoryDAO.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">teachersFirst</a> &gt; <a href="index.source.html" class="el_package">edu.lwtech.csd297.teachersfirst.daos</a> &gt; <span class="el_source">ServiceMemoryDAO.java</span></div><h1>ServiceMemoryDAO.java</h1><pre class="source lang-java linenums">package edu.lwtech.csd297.teachersfirst.daos;
+
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.apache.logging.log4j.*;
+
+import edu.lwtech.csd297.teachersfirst.pojos.*;
+
+// Memory-based DAO class - stores objects in a List.  No persistance.
+
+public class ServiceMemoryDAO implements DAO&lt;Service&gt; {
+
+<span class="fc" id="L14">	private static final Logger logger = LogManager.getLogger(ServiceMemoryDAO.class.getName());</span>
+
+	private AtomicInteger nextListRecID;
+	private List&lt;Service&gt; serviceDB;
+
+	// ----------------------------------------------------------------
+
+<span class="fc" id="L21">	public ServiceMemoryDAO() {</span>
+<span class="fc" id="L22">		this.nextListRecID = new AtomicInteger(1000);</span>
+<span class="fc" id="L23">		this.serviceDB = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L24">	}</span>
+
+	// ----------------------------------------------------------------
+
+	public boolean initialize(String initParams) {
+<span class="pc bpc" id="L29" title="1 of 2 branches missed.">		if (initParams == null)</span>
+<span class="nc" id="L30">			throw new IllegalArgumentException(&quot;init: initParams cannot be null&quot;);</span>
+<span class="fc" id="L31">		logger.debug(&quot;Initializing MemoryDAO with: '{}'&quot;, initParams);</span>
+
+<span class="fc" id="L33">		addDemoData();</span>
+<span class="fc" id="L34">		return true;</span>
+	}
+
+	public void terminate() {
+<span class="fc" id="L38">		logger.debug(&quot;Terminating MemoryDAO...&quot;);</span>
+<span class="fc" id="L39">		this.serviceDB = null;</span>
+<span class="fc" id="L40">	}</span>
+
+	public int insert(Service pojo) {
+<span class="pc bpc" id="L43" title="1 of 2 branches missed.">		if (pojo == null)</span>
+<span class="nc" id="L44">			throw new IllegalArgumentException(&quot;insert: cannot insert null object&quot;);</span>
+<span class="pc bpc" id="L45" title="1 of 2 branches missed.">		if (pojo.getRecID() != -1)</span>
+<span class="nc" id="L46">			throw new IllegalArgumentException(&quot;insert: object is already in database (recID != -1)&quot;);</span>
+<span class="fc" id="L47">		logger.debug(&quot;Inserting &quot; + pojo + &quot;...&quot;);</span>
+
+<span class="fc" id="L49">		pojo.setRecID(this.nextListRecID.incrementAndGet());</span>
+<span class="fc" id="L50">		this.serviceDB.add(pojo);</span>
+
+<span class="fc" id="L52">		logger.debug(&quot;Item successfully inserted!&quot;);</span>
+<span class="fc" id="L53">		return pojo.getRecID();</span>
+	}
+
+	public Service retrieveByID(int id) {
+<span class="nc bnc" id="L57" title="All 2 branches missed.">		if (id &lt; 0)</span>
+<span class="nc" id="L58">			throw new IllegalArgumentException(&quot;retrieveByID: id cannot be negative&quot;);</span>
+<span class="nc" id="L59">		logger.debug(&quot;Getting object with ID: {} ...&quot;, id);</span>
+
+<span class="nc" id="L61">		Service foundObject = null;</span>
+<span class="nc bnc" id="L62" title="All 2 branches missed.">		for (Service pojo : this.serviceDB) {</span>
+<span class="nc bnc" id="L63" title="All 2 branches missed.">			if (pojo.getRecID() == id) {</span>
+<span class="nc" id="L64">				foundObject = pojo;</span>
+<span class="nc" id="L65">				break;</span>
+			}
+<span class="nc" id="L67">		}</span>
+<span class="nc" id="L68">		return foundObject;</span>
+	}
+
+	public Service retrieveByIndex(int index) {
+		// Note: indexes are zero-based
+<span class="nc bnc" id="L73" title="All 2 branches missed.">		if (index &lt; 0)</span>
+<span class="nc" id="L74">			throw new IllegalArgumentException(&quot;retrieveByIndex: index cannot be negative&quot;);</span>
+<span class="nc" id="L75">		logger.debug(&quot;Getting object with index: {} ...&quot;, index);</span>
+
+<span class="nc" id="L77">		return this.serviceDB.get(index);</span>
+	}
+
+	public List&lt;Service&gt; retrieveAll() {
+<span class="nc" id="L81">		logger.debug(&quot;Getting all POJOs ...&quot;);</span>
+<span class="nc" id="L82">		return new ArrayList&lt;&gt;(this.serviceDB); // Return copy of DB collection</span>
+	}
+
+	public List&lt;Integer&gt; retrieveAllIDs() {
+<span class="nc" id="L86">		logger.debug(&quot;Getting all IDs...&quot;);</span>
+
+<span class="nc" id="L88">		List&lt;Integer&gt; listIDs = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L89" title="All 2 branches missed.">		for (Service pojo : this.serviceDB) {</span>
+<span class="nc" id="L90">			listIDs.add(pojo.getRecID());</span>
+<span class="nc" id="L91">		}</span>
+<span class="nc" id="L92">		return listIDs;</span>
+	}
+
+	public List&lt;Service&gt; search(String keyword) {
+<span class="nc bnc" id="L96" title="All 2 branches missed.">		if (keyword == null)</span>
+<span class="nc" id="L97">			throw new IllegalArgumentException(&quot;search: keyword cannot be null&quot;);</span>
+<span class="nc" id="L98">		logger.debug(&quot;Searching for objects containing: '{}'&quot;, keyword);</span>
+
+<span class="nc" id="L100">		keyword = keyword.toLowerCase();</span>
+<span class="nc" id="L101">		List&lt;Service&gt; pojosFound = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L102" title="All 2 branches missed.">		for (Service pojo : this.serviceDB) {</span>
+<span class="nc bnc" id="L103" title="All 2 branches missed.">			if (pojo.getName().toLowerCase().contains(keyword)) {</span>
+<span class="nc" id="L104">				pojosFound.add(pojo);</span>
+<span class="nc" id="L105">				break;</span>
+			}
+<span class="nc" id="L107">		}</span>
+		//logger.debug(&quot;Found {} objects with the keyword '{}'!&quot;, pojosFound.size(), keyword);
+<span class="nc" id="L109">		return pojosFound;</span>
+	}
+
+	public int size() {
+<span class="fc" id="L113">		return this.serviceDB.size();</span>
+	}
+
+	public boolean update(Service pojo) {
+<span class="nc bnc" id="L117" title="All 2 branches missed.">		if (pojo == null)</span>
+<span class="nc" id="L118">			throw new IllegalArgumentException(&quot;update: cannot update null object&quot;);</span>
+<span class="nc" id="L119">		logger.debug(&quot;Trying to update object with ID: {} ...&quot;, pojo.getRecID());</span>
+
+<span class="nc bnc" id="L121" title="All 2 branches missed.">		for (int i = 0; i &lt; this.serviceDB.size(); i++) {</span>
+<span class="nc bnc" id="L122" title="All 2 branches missed.">			if (this.serviceDB.get(i).getRecID() == pojo.getRecID()) {</span>
+<span class="nc" id="L123">				this.serviceDB.set(i, pojo);</span>
+<span class="nc" id="L124">				logger.debug(&quot;Successfully updated: {} !&quot;, pojo.getRecID());</span>
+<span class="nc" id="L125">				return true;</span>
+			}
+		}
+<span class="nc" id="L128">		logger.debug(&quot;Unable to update object: {}.  RecID not found.&quot;, pojo.getRecID());</span>
+<span class="nc" id="L129">		return false;</span>
+	}
+
+	public void delete(int id) {
+<span class="nc bnc" id="L133" title="All 2 branches missed.">		if (id &lt; 0)</span>
+<span class="nc" id="L134">			throw new IllegalArgumentException(&quot;delete: id cannot be negative&quot;);</span>
+<span class="nc" id="L135">		logger.debug(&quot;Trying to delete object with ID: {} ...&quot;, id);</span>
+
+<span class="nc" id="L137">		Service pojoFound = null;</span>
+<span class="nc bnc" id="L138" title="All 2 branches missed.">		for (Service pojo : serviceDB) {</span>
+<span class="nc bnc" id="L139" title="All 2 branches missed.">			if (pojo.getRecID() == id) {</span>
+<span class="nc" id="L140">				pojoFound = pojo;</span>
+<span class="nc" id="L141">				break;</span>
+			}
+<span class="nc" id="L143">		}</span>
+<span class="nc bnc" id="L144" title="All 2 branches missed.">		if (pojoFound != null) {</span>
+<span class="nc" id="L145">			this.serviceDB.remove(pojoFound);</span>
+<span class="nc" id="L146">			logger.debug(&quot;Successfully deleted object with ID: {}&quot;, id);</span>
+		} else {
+<span class="nc" id="L148">			logger.debug(&quot;Unable to delete object with ID: {}. List not found.&quot;, id);</span>
+		}
+<span class="nc" id="L150">	}</span>
+
+	// =================================================================
+
+	private void addDemoData() {
+<span class="fc" id="L155">		logger.debug(&quot;Creating demo data...&quot;);</span>
+
+<span class="fc" id="L157">		this.insert(new Service(&quot;Pilates&quot;, &quot;Pilates is a method of exercise that consists of low-impact flexibility and muscular strength and endurance movements. Use it to stay super trim!&quot;, &quot;Fred, Edmund&quot;));</span>
+<span class="fc" id="L158">		this.insert(new Service(&quot;Phonetics&quot;, &quot;Learn how to make all the sounds with your mouth and talk like a charismatic expert! IPA is your friend!&quot;, &quot;Darren&quot;));</span>
+<span class="fc" id="L159">		this.insert(new Service(&quot;Database Repair&quot;, &quot;Fix all the errors in your SQL, learn how to avoid them in the future, never get escaped again!&quot;, &quot;Edmund, Tanya&quot;));</span>
+<span class="fc" id="L160">		this.insert(new Service(&quot;Extreme E-Biking&quot;, &quot;Pretend you're biking when you're really not! Hear someone yell at you in a crowded room from the spacious comfort of your home!&quot;, &quot;Fred, Darren&quot;));</span>
+
+<span class="fc" id="L162">		logger.info(this.size() + &quot; records inserted&quot;);</span>
+<span class="fc" id="L163">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

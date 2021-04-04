@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SQLRow.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">teachersFirst</a> &gt; <a href="index.source.html" class="el_package">edu.lwtech.csd297.teachersfirst.daos</a> &gt; <span class="el_source">SQLRow.java</span></div><h1>SQLRow.java</h1><pre class="source lang-java linenums">package edu.lwtech.csd297.teachersfirst.daos;
+
+import java.sql.*;
+import java.util.*;
+
+import org.apache.logging.log4j.*;
+
+class SQLRow {
+<span class="fc" id="L9">    private static final Logger logger = LogManager.getLogger(SQLRow.class.getName());</span>
+
+    private Map&lt;String,String&gt; items;
+
+<span class="nc" id="L13">    public SQLRow() {</span>
+<span class="nc" id="L14">        items = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L15">    }</span>
+
+<span class="nc" id="L17">    public SQLRow(String name, String value) {</span>
+<span class="nc" id="L18">        items = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L19">        items.put(name, value);</span>
+<span class="nc" id="L20">    }</span>
+
+    public SQLRow(String name, int value) {
+<span class="nc" id="L23">        this(name, &quot;&quot;+value);</span>
+<span class="nc" id="L24">    }</span>
+
+    public SQLRow(String value) {
+<span class="nc" id="L27">        this(&quot;Value&quot;, value);</span>
+<span class="nc" id="L28">    }</span>
+
+    public SQLRow(int value) {
+<span class="nc" id="L31">        this(&quot;Value&quot;, &quot;&quot;+value);</span>
+<span class="nc" id="L32">    }</span>
+
+<span class="fc" id="L34">    public SQLRow(List&lt;String&gt; columns, ResultSet rs) {</span>
+<span class="fc" id="L35">        items = new HashMap&lt;&gt;();</span>
+
+        try {
+<span class="fc bfc" id="L38" title="All 2 branches covered.">            for (int i=0; i &lt; columns.size(); i++) {</span>
+<span class="fc" id="L39">                items.put(columns.get(i), rs.getString(i+1));</span>
+            }
+<span class="nc" id="L41">        } catch (SQLException e) {</span>
+<span class="nc" id="L42">            logger.error(&quot;Unable to construct SQLRow object from ResultSet.&quot;, e);</span>
+<span class="fc" id="L43">        }</span>
+<span class="fc" id="L44">    }</span>
+
+    public String getItem(String name) {
+<span class="pc bpc" id="L47" title="1 of 2 branches missed.">        if (name == null) throw new IllegalArgumentException(&quot;Null parameter passed to getItem()&quot;);</span>
+<span class="fc" id="L48">        return items.get(name);</span>
+    }
+
+    public String getItem() {
+<span class="nc" id="L52">        return getItem(&quot;Value&quot;);</span>
+    }
+
+    public void addItem(String name, String value) {
+<span class="nc bnc" id="L56" title="All 4 branches missed.">        if (name == null || value == null) throw new IllegalArgumentException(&quot;Null parameter passed to getItem()&quot;);</span>
+<span class="nc" id="L57">        items.put(name, value);</span>
+<span class="nc" id="L58">    }</span>
+
+    public void removeItem(String name) {
+<span class="nc bnc" id="L61" title="All 2 branches missed.">        if (name == null) throw new IllegalArgumentException(&quot;Null parameter passed to getItem()&quot;);</span>
+<span class="nc" id="L62">        items.remove(name);</span>
+<span class="nc" id="L63">    }</span>
+
+    @Override
+    public String toString() {
+<span class="fc" id="L67">        String s = &quot;{&quot;;</span>
+<span class="fc" id="L68">        String comma = &quot;&quot;;</span>
+<span class="fc bfc" id="L69" title="All 2 branches covered.">        for (String name : items.keySet()) {</span>
+<span class="fc" id="L70">            s += comma + &quot;{&quot; + name + &quot;,&quot; + items.get(name) + &quot;}&quot;;</span>
+<span class="fc" id="L71">            comma = &quot;,&quot;;</span>
+<span class="fc" id="L72">        }</span>
+<span class="fc" id="L73">        s += &quot;}&quot;;</span>
+<span class="fc" id="L74">        return s;</span>
+    }
+    
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Security.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">teachersFirst</a> &gt; <a href="index.source.html" class="el_package">edu.lwtech.csd297.teachersfirst</a> &gt; <span class="el_source">Security.java</span></div><h1>Security.java</h1><pre class="source lang-java linenums">package edu.lwtech.csd297.teachersfirst;
+
+import java.net.*;
+import java.util.*;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.logging.log4j.*;
+
+import edu.lwtech.csd297.teachersfirst.daos.MemberSqlDAO;
+import edu.lwtech.csd297.teachersfirst.pojos.*;
+
+<span class="nc" id="L13">public class Security {</span>
+	
+<span class="fc" id="L15">	private static final Logger logger = LogManager.getLogger(TeachersFirstServlet.class);</span>
+<span class="fc" id="L16">	private static final List&lt;String&gt; ipWhitelist = new ArrayList&lt;String&gt;();</span>
+
+	public static void populateWhitelist() {
+		
+		// Manual entries:		
+		
+		//whitelistIp(&quot;1.1.1.1&quot;);
+		//whitelistIp(&quot;1.1.1.1&quot;);
+		//whitelistIp(&quot;1.1.1.1&quot;);
+		//whitelistIp(&quot;1.1.1.1&quot;);
+		
+		// Automatic entries:
+		
+		//TODO: these should refresh about once a day, maybe, or it should just be checked on the fly -- it is fast after all
+		//well, food for thought.
+<span class="fc" id="L31">		whitelistIp(nsLookup(&quot;dstults.net&quot;));</span>
+
+<span class="fc" id="L33">	}</span>
+
+	private static void whitelistIp(String ip) {
+<span class="fc" id="L36">		ipWhitelist.add(ip);</span>
+<span class="fc" id="L37">		logger.info(&quot;Added IP [ &quot; + ip + &quot; ] to whitelist.&quot;);</span>
+<span class="fc" id="L38">	}</span>
+
+	public static boolean isWhitelisted(String ip) {
+<span class="fc" id="L41">		return ipWhitelist.contains(ip);</span>
+	}
+
+	public static String nsLookup(String domain) {
+		try {
+<span class="fc" id="L46">			InetAddress inetHost = InetAddress.getByName(domain);</span>
+<span class="fc" id="L47">			logger.debug(&quot;Resolving [&quot; + domain + &quot;] ... IP is [&quot; + inetHost.getHostAddress() + &quot;]&quot;);</span>
+<span class="fc" id="L48">			return inetHost.getHostAddress();</span>
+<span class="nc" id="L49">		} catch(UnknownHostException ex) {</span>
+<span class="nc" id="L50">			logger.warn(&quot;Resolving [&quot; + domain + &quot;] ... Warning: Hostname resolution failed or unrecognized host!&quot;);</span>
+<span class="nc" id="L51">			return &quot;&quot;;</span>
+		}
+	}
+
+
+	public static Member checkPassword(String loginName, String password) {
+<span class="fc" id="L57">		MemberSqlDAO memberDAO = (MemberSqlDAO) DataManager.getMemberDAO();</span>
+<span class="fc" id="L58">		Member member = memberDAO.retrieveByLoginNameAndPassword(loginName, password);</span>
+
+<span class="fc bfc" id="L60" title="All 2 branches covered.">		if(member != null){</span>
+<span class="fc" id="L61">			return member;</span>
+		}
+		// should perform sql query, for now, just does this
+<span class="fc" id="L64">		logger.debug(loginName + &quot; failed to log in with password: &quot; + password);</span>
+<span class="fc" id="L65">		return null;</span>
+	}
+
+	public static void login(HttpServletRequest request, Member member) {
+		//TODO: Set info in cookie
+<span class="nc" id="L70">		request.getSession().setAttribute(&quot;USER_ID&quot;, member.getRecID());</span>
+<span class="nc" id="L71">		request.getSession().setAttribute(&quot;USER_NAME&quot;, member.getDisplayName());</span>
+<span class="nc" id="L72">		logger.debug(member.getRecID() + &quot;/&quot; + member.getLoginName() + &quot; logged in.&quot;);</span>
+<span class="nc" id="L73">	}</span>
+
+	public static void logout(HttpServletRequest request, String info) {
+<span class="nc" id="L76">		request.getSession().setAttribute(&quot;USER_ID&quot;, 0);</span>
+<span class="nc" id="L77">		request.getSession().setAttribute(&quot;USER_NAME&quot;, &quot;&quot;);</span>
+<span class="nc" id="L78">		logger.debug(&quot;User logged out: &quot; + info);</span>
+<span class="nc" id="L79">	}</span>
+
+	// This has its own process to ensure security
+	public static int getUserId(HttpServletRequest request) {
+<span class="nc bnc" id="L83" title="All 2 branches missed.">		if (request.getSession().getAttribute(&quot;USER_ID&quot;) == null) return 0;</span>
+<span class="nc bnc" id="L84" title="All 2 branches missed.">		if (request.getSession().getAttribute(&quot;USER_ID&quot;).toString() == null) return 0;</span>
+<span class="nc bnc" id="L85" title="All 2 branches missed.">		if (request.getSession().getAttribute(&quot;USER_ID&quot;).toString().isEmpty()) return 0;</span>
+<span class="nc" id="L86">		String uid = request.getSession().getAttribute(&quot;USER_ID&quot;).toString();</span>
+		try {
+<span class="nc" id="L88">			return Integer.parseInt(uid);</span>
+<span class="nc" id="L89">		} catch (NumberFormatException e) {</span>
+<span class="nc" id="L90">			logger.fatal(&quot;SECURITY RISK: Invalid data stored in session's USER_ID value!&quot;);</span>
+		}
+<span class="nc" id="L92">		return 0;</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

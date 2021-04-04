@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RegisterPage.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">teachersFirst</a> &gt; <a href="index.source.html" class="el_package">edu.lwtech.csd297.teachersfirst.pages</a> &gt; <span class="el_source">RegisterPage.java</span></div><h1>RegisterPage.java</h1><pre class="source lang-java linenums">package edu.lwtech.csd297.teachersfirst.pages;
+
+import java.util.*;
+import javax.servlet.http.*;
+
+import edu.lwtech.csd297.teachersfirst.QueryHelpers;
+import edu.lwtech.csd297.teachersfirst.pojos.*;
+
+public class RegisterPage extends PageLoader {
+
+	// Constructor
+<span class="nc" id="L12">	public RegisterPage(HttpServletRequest request, HttpServletResponse response) { super(request, response); }</span>
+
+	// Page-specific
+
+	@Override
+	public void loadPage() {
+<span class="nc" id="L18">		templateDataMap.put(&quot;title&quot;, &quot;Register&quot;);</span>
+<span class="nc" id="L19">		String loginName = QueryHelpers.getGet(request, &quot;loginName&quot;);</span>
+<span class="nc" id="L20">		String displayName = QueryHelpers.getGet(request, &quot;displayName&quot;);</span>
+<span class="nc" id="L21">		String gender = QueryHelpers.getGet(request, &quot;gender&quot;);</span>
+<span class="nc" id="L22">		String phone1 = QueryHelpers.getGet(request, &quot;phone1&quot;);</span>
+<span class="nc" id="L23">		String phone2 = QueryHelpers.getGet(request, &quot;phone2&quot;);</span>
+<span class="nc" id="L24">		String email = QueryHelpers.getGet(request, &quot;email&quot;);</span>
+
+		// FreeMarker
+<span class="nc" id="L27">		templateDataMap.put(&quot;loginName&quot;, loginName);</span>
+<span class="nc" id="L28">		templateDataMap.put(&quot;displayName&quot;, displayName);</span>
+<span class="nc" id="L29">		templateDataMap.put(&quot;gender&quot;, gender);</span>
+<span class="nc" id="L30">		templateDataMap.put(&quot;phone1&quot;, phone1);</span>
+<span class="nc" id="L31">		templateDataMap.put(&quot;phone2&quot;, phone2);</span>
+<span class="nc" id="L32">		templateDataMap.put(&quot;email&quot;, email);</span>
+<span class="nc" id="L33">		templateName = &quot;register.ftl&quot;;</span>
+
+		// Go
+<span class="nc" id="L36">		trySendResponse();</span>
+<span class="nc" id="L37">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>
